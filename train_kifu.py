@@ -28,9 +28,13 @@ x_train, x_test, y_train, y_test = training_set.data, test_set.data, \
   training_set.target, test_set.target
 feature_columns = [tf.contrib.layers.real_valued_column("", dimension=84)]
 
+
 # Training
+config = tf.contrib.learn.RunConfig()
+config.tf_config.gpu_options.allow_growth=True
 classifier = tf.contrib.learn.DNNClassifier(
-    model_dir=MODEL_DIR, feature_columns=feature_columns, hidden_units=[20, 20], n_classes=3)
+    model_dir=MODEL_DIR, config=config,
+    feature_columns=feature_columns, hidden_units=[20, 20], n_classes=3)
 classifier.fit(x=x_train, y=y_train, steps=STEPS)
 
 # Evalutes accuracy
