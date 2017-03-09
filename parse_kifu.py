@@ -1,9 +1,15 @@
 # Play Go from Kifu.
+# Sample usage: python parse_kifu.py small/* small.log > small.csv
 
-from collections import defaultdict
 import glob
+import logging
 import sys
 import time
+
+from collections import defaultdict
+
+
+SKIP_SEQUENCE = 10  # Only save after 10 sequences
 
 def NearPositions(x, y):
   return ((x-1, y), (x+1, y), (x, y-1), (x, y+1))
@@ -32,7 +38,7 @@ def IsOpponentStone(target, source):
 
 def PlayGo(board, move):
   if len(move) < 5:
-    print('Skips invalid move')
+    logging.info('Skips invalid move')
     return
   stone = move[0]
   x = ord(move[2]) - ord('a') + 1
@@ -48,7 +54,7 @@ def PlayGo(board, move):
       GetConnented(board, group, pos[0], pos[1])
       freedom = GetFreedom(board, group)      
       if freedom == 0:
-        print('Capture %d stones from (%d, %d)' % (len(group), pos[0], pos[1]))
+        logging.info('Capture %d stones from (%d, %d)' % (len(group), pos[0], pos[1]))
         CaptureGroup(board, group)
         capture_count = capture_count + len(group)
         capture_pos = pos
@@ -60,13 +66,13 @@ def PlayGo(board, move):
     if len(group) == 1 and GetFreedom(board, group) == 1:
       return (capture_pos[0], capture_pos[1])
 
-def GetWinner(summary, susun):
+def GetWinner(summary, sequence):
   if summary.find('RE[B') > 0:
     return 'B'
   elif summary.find('RE[W') > 0:
     return 'W'
-  elif len(susun) > 1 and susun[-1][-2:] != '[]':
-    return susun[-1][0]
+  elif len(sequence) > 1 and sequence[-1][-2:] != '[]':
+    return sequence[-1][0]
   return 'J'
 
 def InitBoard():
@@ -78,35 +84,55 @@ def InitBoard():
     board[10][i] = 'E'
   return board
 
+ENCODE = {'B': 1, 'W': 2, ' ': 0, 'J': 0}
+def ToCsv(board, last_move, ko, result):
+  if ko == None:
+    ko = (0, 0)
+  board_serial = ','.join(str(ENCODE[item]) for innerlist in board[1:-1] for item in innerlist[1:-1])
+  return ('%s,%d,%d,%d,%d' % (board_serial, ENCODE[last_move], ko[0], ko[1], ENCODE[result]))
+
+
+# Main code.
 if len(sys.argv) == 1:
-  print('Usage: python parer_kifu.py <file_pattern>')
+  print('Usage: python parer_kifu.py <file_pattern> [log_file]')
   exit(1)
 
-files = glob.glob(sys.argv[1])
+if len(sys.argv) > 2:
+  logging.basicConfig(filename=sys.argv[2],level=logging.DEBUG)
+
 win_count = defaultdict(lambda: 0)
-for file in files:
-  f = open(file)
+for file in glob.glob(sys.argv[1]):
+  logging.info('Starting new game: %s' % file)
+  f = open(file)  
   summary = f.readline()
   p1 = f.readline()
   p2 = f.readline()
-  susun = f.readline()[1:-1].split(';')
+  sequence = f.readline()[1:-1].split(';')
+  if len(sequence) <= SKIP_SEQUENCE:
+    logging.warning('Drops too short game')
+    continue
 
-  win = GetWinner(summary, susun)
-  print(win, ': ', file)
-  win_count[win] = win_count[win] + 1
+  result = GetWinner(summary, sequence)  
+  win_count[result] = win_count[result] + 1
   
   board = InitBoard()
-  for move in susun:
-    print(move)
+  seq_cnt = 0
+  for move in sequence:
+    logging.info(move)
     ko = PlayGo(board, move)
     if ko != None:
-      print('Ko occured')
+      logging.info('Ko occured')
       board[ko[0]][ko[1]] = 'K'
       for row in board:
-        print(row)
+        logging.info(row)
       board[ko[0]][ko[1]] = ' '
     else:
       for row in board:
-        print(row)
+        logging.info(row)
+    if seq_cnt > SKIP_SEQUENCE:
+      print(ToCsv(board, move[0], ko, result))
+    else:
+      seq_cnt = seq_cnt + 1
+  logging.info('End of gmae, result: %s' % result)
 
-print('win_count: ', win_count)
+logging.info('win_count: %s' % str(win_count))
