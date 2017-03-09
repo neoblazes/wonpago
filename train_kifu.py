@@ -2,17 +2,22 @@
 # It saaumes that there are training.csv and test.csv files alreay esixting.
 #
 # Usage: python train_kifu.py [dir] [steps]
-# Sample usage: python train_kifu.py step2000 2000
+# Sample usage: python train_kifu.py train2000 2000
 
 import numpy as np
 import tensorflow as tf
+
+import logging
 import sys
 
 MODEL_DIR=None
 STEPS=200
-if len(sys.argv) > 3:
-  MODEL_DIR=sys.argv[2]
-  STEPS=int(sys.argv[3])  
+if len(sys.argv) >= 3:
+  MODEL_DIR=sys.argv[1]
+  print('Working on directory: ', MODEL_DIR)
+  STEPS=int(sys.argv[2])
+print('Training %d steps' % STEPS)
+logging.getLogger().setLevel(logging.INFO)
 
 # Load and define features
 training_set = tf.contrib.learn.datasets.base.load_csv_without_header(
