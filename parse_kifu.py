@@ -123,12 +123,12 @@ for file in glob.glob(sys.argv[1]):
     if ko != None:
       logging.info('Ko occured')
       board[ko[0]][ko[1]] = 'K'
-      for row in board:
-        logging.info(row)
+      for row in board[1:-1]:  # Skips edge on logging
+        logging.info(row[1:-1])
       board[ko[0]][ko[1]] = ' '
     else:
-      for row in board:
-        logging.info(row)
+      for row in board[1:-1]:
+        logging.info(row[1:-1])
     if seq_cnt > SKIP_SEQUENCE:
       print(ToCsv(board, move[0], ko, result))
     else:
