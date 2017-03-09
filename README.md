@@ -13,8 +13,7 @@ The training and test data set is built from kifu with timestamp
 training: 2015-12-01~2015-12-25
 test: 2015-12-26
 
-And here is the run log with 20x20 hidden.
-Note that the first round ran without CUDA.
+And here is the run log with 20x20 hidden without CUDA.
 
 The loss decrease 0.002 per 100 step.
 100k step of the learning might show good progress.
