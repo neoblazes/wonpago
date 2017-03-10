@@ -84,12 +84,14 @@ def InitBoard():
     board[10][i] = 'E'
   return board
 
-ENCODE = {'B': 1, 'W': 2, ' ': 0, 'J': 0}
+# For easier training, encode black stone to positive number and negative for white one.
+# Also by adding 1, makes the result to unsigned int. 0=white win, 1=jigo and 2=black win.
+ENCODE = {'B': 1, 'W': -1, ' ': 0, 'J': 0}
 def ToCsv(board, last_move, ko, result):
   if ko == None:
     ko = (0, 0)
   board_serial = ','.join(str(ENCODE[item]) for innerlist in board[1:-1] for item in innerlist[1:-1])
-  return ('%s,%d,%d,%d,%d' % (board_serial, ENCODE[last_move], ko[0], ko[1], ENCODE[result]))
+  return ('%s,%d,%d,%d,%d' % (board_serial, ENCODE[last_move], ko[0], ko[1], ENCODE[result] + 1))
 
 
 # Main code.
