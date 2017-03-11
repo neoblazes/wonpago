@@ -23,10 +23,10 @@ x_test, y_test = test_set.data, test_set.target
 feature_columns = [tf.contrib.layers.real_valued_column("", dimension=84)]
 
 # Load model and predict
-classifier = tf.contrib.learn.DNNClassifier(
+regressor = tf.contrib.learn.DNNRegressor(
     model_dir=model_dir,
-    feature_columns=feature_columns, hidden_units=[20, 20], n_classes=3)
-ds_predict_tf  = classifier.predict(x_test) 
+    feature_columns=feature_columns, hidden_units=[20, 20])
+ds_predict_tf  = regressor.predict(x_test) 
 
 # Print out human readable.
 BOARD_CHAR = { -1: 'O', 1: '@', 0: '.' }
@@ -47,7 +47,7 @@ for pred in ds_predict_tf:
       else:
         outstr = outstr + BOARD_CHAR[board[pos]]
       pos = pos + 1
-    print outstr
-  print('%s turn, predict: %s, real: %s\n' %
-        (NEXT_TURN_MSG[last_move], RESULT_MSG[pred], RESULT_MSG[y_test[idx]]))
+    print(outstr)
+  print('%s turn, predict(W(-1)~B(1)): %f, real: %s\n' %
+        (NEXT_TURN_MSG[last_move], pred, RESULT_MSG[y_test[idx]]))
   idx = idx + 1
