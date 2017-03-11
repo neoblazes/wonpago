@@ -25,7 +25,7 @@ feature_columns = [tf.contrib.layers.real_valued_column("", dimension=84)]
 # Load model and predict
 regressor = tf.contrib.learn.DNNRegressor(
     model_dir=model_dir,
-    feature_columns=feature_columns, hidden_units=[20, 20])
+    feature_columns=feature_columns, hidden_units=[81, 49, 25])
 ds_predict_tf  = regressor.predict(x_test) 
 
 # Print out human readable.

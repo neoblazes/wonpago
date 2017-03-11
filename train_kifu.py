@@ -34,7 +34,7 @@ config = tf.contrib.learn.RunConfig()
 config.tf_config.gpu_options.allow_growth=True
 regressor = tf.contrib.learn.DNNRegressor(
     model_dir=MODEL_DIR, config=config,
-    feature_columns=feature_columns, hidden_units=[20, 20])
+    feature_columns=feature_columns, hidden_units=[81, 49, 25])
 regressor.fit(x=x_train, y=y_train, steps=STEPS)
 
 # Evalutes accuracy
