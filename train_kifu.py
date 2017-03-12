@@ -21,7 +21,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 # Load and define features
 training_set = tf.contrib.learn.datasets.base.load_csv_without_header(
-    filename='training.csv', target_dtype=np.int, features_dtype=np.float32, target_column=-1)
+    filename='large.csv', target_dtype=np.int, features_dtype=np.float32, target_column=-1)
 test_set = tf.contrib.learn.datasets.base.load_csv_without_header(
     filename='test.csv', target_dtype=np.int, features_dtype=np.float32, target_column=-1)
 x_train, x_test, y_train, y_test = training_set.data, test_set.data, \
