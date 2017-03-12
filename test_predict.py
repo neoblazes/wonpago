@@ -49,5 +49,5 @@ for pred in ds_predict_tf:
       pos = pos + 1
     print(outstr)
   print('Last move %s, predict(W(-1)~B(1)): %f, real: %s\n' %
-        (TURN_MSG[last_move], pred, RESULT_MSG[y_test[idx]]))
+        (TURN_MSG[last_move], pred - 1, RESULT_MSG[y_test[idx]]))
   idx = idx + 1
