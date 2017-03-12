@@ -30,7 +30,7 @@ ds_predict_tf  = regressor.predict(x_test)
 
 # Print out human readable.
 BOARD_CHAR = { -1: 'O', 1: '@', 0: '.' }
-NEXT_TURN_MSG = { -1: 'BLACK(@)', 1: 'WHITE(O)' }
+TURN_MSG = { 1: 'BLACK(@)', -1: 'WHITE(O)' }
 RESULT_MSG = { 0: 'WHITE', 1: 'JIGO', 2: 'BLACK' }
 idx = 0
 for pred in ds_predict_tf:
@@ -48,6 +48,6 @@ for pred in ds_predict_tf:
         outstr = outstr + BOARD_CHAR[board[pos]]
       pos = pos + 1
     print(outstr)
-  print('%s turn, predict(W(-1)~B(1)): %f, real: %s\n' %
-        (NEXT_TURN_MSG[last_move], pred, RESULT_MSG[y_test[idx]]))
+  print('Last move %s, predict(W(-1)~B(1)): %f, real: %s\n' %
+        (TURN_MSG[last_move], pred, RESULT_MSG[y_test[idx]]))
   idx = idx + 1
