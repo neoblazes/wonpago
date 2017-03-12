@@ -42,7 +42,7 @@ ds_predict_tf  = regressor.predict(x_test)
 # Print out human readable.
 BOARD_CHAR = { -1: 'O', 1: '@', 0: '.' }
 TURN_MSG = { 1: 'BLACK(@)', -1: 'WHITE(O)' }
-RESULT_MSG = { 0: 'WHITE', 1: 'JIGO', 2: 'BLACK' }
+RESULT_MSG = { -1: 'WHITE', 0: 'JIGO', 1: 'BLACK' }
 idx = 0
 for pred in ds_predict_tf:
   feature = x_test[idx]
