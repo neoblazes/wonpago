@@ -106,7 +106,7 @@ def ToCsv(board, last_move, ko, result):
   if ko == None:
     ko = (0, 0)
   board_serial = ','.join(str(ENCODE[item]) for innerlist in board[1:-1] for item in innerlist[1:-1])
-  return ('%s,%d,%d,%d,%d,%d' % (board_serial, ENCODE[last_move], ko[0], ko[1], ENCODE[result] + 1))
+  return ('%s,%d,%d,%d,%d' % (board_serial, ENCODE[last_move], ko[0], ko[1], ENCODE[result] + 1))
 
 
 # Main code.
