@@ -110,7 +110,10 @@ def PrintBoard(feature, pred):
 # Main loop
 while True:
   feature = input('Enter board feature [[board]*81, last_move, [ko]*2]:\n')
-  feature = feature.split(',')
+  if len(feature) >= 84:
+    feature = list(feature)
+  else:
+    feature = feature.split(',')
   if len(feature) < 84:
     continue
   feature = list(map(int, feature))[:84]
