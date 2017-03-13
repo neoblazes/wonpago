@@ -20,9 +20,9 @@ print('Test %s file with model in %s' % (test_set, model_dir))
 test_set = tf.contrib.learn.datasets.base.load_csv_without_header(
     filename=test_set, target_dtype=np.int, features_dtype=np.float32, target_column=-1)
 x_test, y_test = test_set.data, test_set.target
-feature_columns = [tf.contrib.layers.real_valued_column("", dimension=84)]
 
 # Load model and predict
+feature_columns = [tf.contrib.layers.real_valued_column("", dimension=84)]
 regressor = tf.contrib.learn.DNNRegressor(
     model_dir=model_dir,
     feature_columns=feature_columns, hidden_units=[81, 81, 49, 25])

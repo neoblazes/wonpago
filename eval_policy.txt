@@ -1,0 +1,71 @@
+Enter board feature [[board]*81, last_move, [ko]*2]: .O@@...@.
+..O@@@.O@
+.OO@.@@@O
+@@OO@@OOO
+OOOOO@O.O
+@OO.O@@O.
+@@@O@@.@O
+.....@@OO
+.....@OO.
+Last move WHITE(O), predict(W(-1)~B(1)): 0.291597
+
+Pass invalid move
+Pass invalid move
+Pass invalid move
+Pass invalid move
+.O@@...@.
+..O@@@.O@
+.OO@.@@@O
+@@OO@@OOO
+OOOOO@O.O
+@OO.O@@O.
+@@@O@@.@O
+.....@@OO
+...@.@OO.
+Last move BLACK(@), predict(W(-1)~B(1)): 0.513353
+
+.O@@...@.
+..O@@@.O@
+.OO@.@@@O
+@@OO@@OOO
+OOOOO@O.O
+@OO.O@@O.
+@@@O@@.@O
+.@...@@OO
+.....@OO.
+Last move BLACK(@), predict(W(-1)~B(1)): 0.459328
+
+.O@@...@.
+..O@@@.O@
+.OO@.@@@O
+@@OO@@OOO
+OOOOO@O.O
+@OO.O@@O.
+@@@O@@.@O
+..@..@@OO
+.....@OO.
+Last move BLACK(@), predict(W(-1)~B(1)): 0.441180
+
+.O@@...@.
+..O@@@.O@
+.OO@.@@@O
+@@OO@@OOO
+OOOOO@O.O
+@OO.O@@O.
+@@@O@@.@O
+@....@@OO
+.....@OO.
+Last move BLACK(@), predict(W(-1)~B(1)): 0.376484
+
+.O@@...@.
+..O@@@.O@
+.OO@.@@@O
+@@OO@@OOO
+OOOOO@O.O
+@OO.O@@O.
+@@@O@@.@O
+.....@@OO
+....@@OO.
+Last move BLACK(@), predict(W(-1)~B(1)): 0.339878
+
+Enter board feature [[board]*81, last_move, [ko]*2]: 
