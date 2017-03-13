@@ -36,7 +36,7 @@ feature_columns = [tf.contrib.layers.real_valued_column("", dimension=84)]
 # Load model and predict
 regressor = tf.contrib.learn.DNNRegressor(
     model_dir=model_dir,
-    feature_columns=feature_columns, hidden_units=[81, 49, 25])
+    feature_columns=feature_columns, hidden_units=[81, 81, 49, 25])
 ds_predict_tf  = regressor.predict(x_test)
 
 # Print out human readable.
@@ -59,6 +59,6 @@ for pred in ds_predict_tf:
         outstr = outstr + BOARD_CHAR[board[pos]]
       pos = pos + 1
     print outstr
-  print('Last move %s, predict(W(-1)~B(1)): %f\n' %
-        (TURN_MSG[last_move], pred - 1))
+  print('Last move %s, predict(B>0>W): %f\n' %
+        (TURN_MSG[last_move], pred - 44))
   idx = idx + 1
