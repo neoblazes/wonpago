@@ -106,7 +106,7 @@ def ToCsv(board, last_move, ko, result):
   if ko == None:
     ko = (0, 0)
   board_serial = ','.join(str(ENCODE[item]) for innerlist in board[1:-1] for item in innerlist[1:-1])
-  return ('%s,%d,%d,%d,%d' % (board_serial, ENCODE[last_move], ko[0], ko[1], result))
+  return ('%s,%d,%d,%d,%d,%d' % (board_serial, ENCODE[last_move], ko[0], ko[1], ENCODE[result] + 1))
 
 
 # Main code.
@@ -130,10 +130,10 @@ for file in glob.glob(sys.argv[1]):
     continue
 
   result = GetWinner(summary, sequence)
-  black_territory = GetBlackTerritory(summary, sequence)
-  if black_territory == None:
+  #black_territory = GetBlackTerritory(summary, sequence)
+  #if black_territory == None:
     # Skipps surrender games.
-    continue
+  #  continue
   win_count[result] = win_count[result] + 1
   
   board = InitBoard()
@@ -151,9 +151,9 @@ for file in glob.glob(sys.argv[1]):
       for row in board[1:-1]:
         logging.info(row[1:-1])
     if seq_cnt > SKIP_SEQUENCE:
-      print(ToCsv(board, move[0], ko, black_territory))
+      print(ToCsv(board, move[0], ko, result))
     else:
       seq_cnt = seq_cnt + 1
-  logging.info('End of game, result: %s by %d' % (result, abs(black_territory - 44)))
+  logging.info('End of game, result: %s' % result)
 
 logging.info('win_count: %s' % str(win_count))

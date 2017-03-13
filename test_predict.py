@@ -48,6 +48,6 @@ for pred in ds_predict_tf:
         outstr = outstr + BOARD_CHAR[board[pos]]
       pos = pos + 1
     print(outstr)
-  print('Last move %s, predict(B>0>W): %f, real: %s\n' %
-        (TURN_MSG[last_move], pred - 44, y_test[idx] - 44))
+  print('Last move %s, predict(W(-1)~B(1)): %f, real: %s\n' %
+        (TURN_MSG[last_move], pred - 1, RESULT_MSG[y_test[idx]]))
   idx = idx + 1
