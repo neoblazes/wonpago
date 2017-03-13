@@ -1,7 +1,7 @@
 # Training DNN classifier from Kifu.
 # It saaumes that there are training.csv and test.csv files alreay esixting.
 #
-# Usage: python train_kifu.py [dir] [steps] [flip,H|V|A]
+# Usage: python train_kifu.py [dir] [steps]
 # Sample usage: python train_kifu.py train2000 2000
 
 import numpy as np
@@ -12,13 +12,10 @@ import sys
 
 MODEL_DIR=None
 STEPS=200
-FLIP=''
 if len(sys.argv) >= 3:
   MODEL_DIR=sys.argv[1]
   print('Working on directory: ', MODEL_DIR)
   STEPS=int(sys.argv[2])
-if len(sys.argv) >= 4:
-  FLIP=sys.argv[3]
 
 
 def flip_vertical(feature):
@@ -28,6 +25,7 @@ def flip_vertical(feature):
 def flip_horizontal(feature):
   for i in range(9):
     feature[i*9+0:i*9+9] = np.flipud(feature[i*9+0:i*9+9])
+
 
 print('Training %d steps' % STEPS)
 logging.getLogger().setLevel(logging.INFO)
@@ -39,12 +37,15 @@ test_set = tf.contrib.learn.datasets.base.load_csv_without_header(
     filename='test.csv', target_dtype=np.int, features_dtype=np.float32, target_column=-1)
 x_train, x_test, y_train, y_test = training_set.data, test_set.data, \
   training_set.target, test_set.target
-if FLIP == 'V' or FLIP == 'A':
-  for feature in x_train:
-    flip_vertical(feature)
-if FLIP == 'H' or FLIP == 'A':
-  for feature in x_train:
-    flip_horizontal(feature)
+# Expend to 4 flips.
+x_train_fv = x_train.copy()
+flip_vertical(x_train_fv)
+x_train_fh = x_train.copy()
+flip_horizontal(x_train_fh)
+x_train_fa = x_train_fh.copy()
+flip_vertical(x_train_fa)
+x_train = np.concatenate((x_train, x_train_fv, x_train_fh, x_train_fa), axis=0)
+y_train = np.concatenate(([y_train] * 4), axis=0)
 feature_columns = [tf.contrib.layers.real_valued_column("", dimension=84)]
 
 # Training
