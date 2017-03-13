@@ -75,6 +75,21 @@ def GetWinner(summary, sequence):
     return sequence[-1][0]
   return 'J'
 
+def GetBlackTerritory(summary, sequence):
+  pos = summary.find('RE[')
+  if pos > 0:
+    ret = 44
+    winner = summary[pos + 3]
+    diff = float(summary[pos + 5:summary.find(']', pos)])
+    if winner == 'B':
+      ret = ret + diff
+    else:
+      ret = ret - diff    
+    return int(ret + 0.5)  # Adjust komi to 7.
+  elif len(sequence) > 1 and sequence[-1][-2:] != '[]':
+    return None  # Skips surrender games.
+  return 44  # 44 for Jigo
+
 def InitBoard():
   board = [x[:] for x in [[' '] * 11] * 11]
   for i in range(11):
@@ -91,7 +106,7 @@ def ToCsv(board, last_move, ko, result):
   if ko == None:
     ko = (0, 0)
   board_serial = ','.join(str(ENCODE[item]) for innerlist in board[1:-1] for item in innerlist[1:-1])
-  return ('%s,%d,%d,%d,%d' % (board_serial, ENCODE[last_move], ko[0], ko[1], ENCODE[result] + 1))
+  return ('%s,%d,%d,%d,%d' % (board_serial, ENCODE[last_move], ko[0], ko[1], result))
 
 
 # Main code.
@@ -114,7 +129,11 @@ for file in glob.glob(sys.argv[1]):
     logging.warning('Drops too short game')
     continue
 
-  result = GetWinner(summary, sequence)  
+  result = GetWinner(summary, sequence)
+  black_territory = GetBlackTerritory(summary, sequence)
+  if black_territory == None:
+    # Skipps surrender games.
+    continue
   win_count[result] = win_count[result] + 1
   
   board = InitBoard()
@@ -132,9 +151,9 @@ for file in glob.glob(sys.argv[1]):
       for row in board[1:-1]:
         logging.info(row[1:-1])
     if seq_cnt > SKIP_SEQUENCE:
-      print(ToCsv(board, move[0], ko, result))
+      print(ToCsv(board, move[0], ko, black_territory))
     else:
       seq_cnt = seq_cnt + 1
-  logging.info('End of gmae, result: %s' % result)
+  logging.info('End of game, result: %s by %d' % (result, abs(black_territory - 44)))
 
 logging.info('win_count: %s' % str(win_count))
