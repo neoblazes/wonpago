@@ -25,6 +25,7 @@ def GetConnented(board, group, x, y):
       GetConnented(board, group, pos[0], pos[1])
       
 def GetFreedom(board, group):
+  # It should check dup of freedom. Just ok to check 0 or Ko.
   freedom = 0
   for pos in group:
     for n_pos in NearPositions(pos[0], pos[1]):
@@ -109,7 +110,10 @@ def PrintBoard(feature, pred):
 # Main loop
 while True:
   feature = input('Enter board feature [[board]*81, last_move, [ko]*2]:\n')
-  feature = list(map(int, feature.split(',')))[:84]
+  feature = feature.split(',')
+  if len(feature) < 84:
+    continue
+  feature = list(map(int, feature))[:84]
   PrintBoard(feature, GetPredict(feature))
   board = InitBoard()
   ko_x = int(feature[82])
@@ -127,6 +131,7 @@ while True:
         board[i][j] = 'B'
       idx = idx + 1
 
+  features = []
   move_scores = {}  
   # Try all valid moves
   for i in range(1,10):
@@ -141,8 +146,16 @@ while True:
       feature2[(i-1)*9+j-1] = next_move
       feature2[81] = next_move
       if ret != None:
-        feature2[82:83] = ret
-      # Eval and store
-      move_scores[','.join(list(map(str, feature2)))] = GetPredict(feature2)
-  for k, v in sorted(move_scores.items(), key =lambda x:x[1], reverse = (stone=='B'))[:5]:
+        feature2[82] = ret[0]
+        feature2[83] = ret[1]
+      # Push to eval
+      features.append(feature2)
+  # Batch eval (for performance)
+  x_test = np.array(features, dtype=float)
+  pred_tf = regressor.predict(x_test)
+  idx = 0
+  for pred in pred_tf:
+    move_scores[','.join(list(map(str, features[idx])))] = pred
+    idx = idx + 1    
+  for k, v in sorted(move_scores.items(), key =lambda x:x[1], reverse = (stone=='B'))[:10]:
     PrintBoard(list(map(int, k.split(','))), v)
