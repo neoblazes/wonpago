@@ -72,7 +72,7 @@ def FowardFeatures(feature):
       feature2 = list(feature)  # make clone for eval
       feature2[(i-1)*9+j-1] = next_move
       feature2[81] = next_move
-      if ret != None:
+      if ko != None:
         feature2[82:84] = ko[0:2]
       features.append(feature2)
   return features  

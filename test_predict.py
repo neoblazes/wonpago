@@ -7,6 +7,7 @@
 import numpy as np
 import tensorflow as tf
 
+import importlib
 import sys
 
 if len(sys.argv) < 2:
@@ -18,20 +19,25 @@ print('Test %s file with model in %s' % (test_set, model_dir))
 
 # Load and define features
 test_set = tf.contrib.learn.datasets.base.load_csv_without_header(
-    filename=test_set, target_dtype=np.int, features_dtype=np.float32, target_column=-1)
+    filename=test_set, target_dtype=np.float32, features_dtype=np.float32, target_column=-1)
 x_test, y_test = test_set.data, test_set.target
 
 # Load model and predict
-feature_columns = [tf.contrib.layers.real_valued_column("", dimension=84)]
-regressor = tf.contrib.learn.DNNRegressor(
-    model_dir=model_dir,
-    feature_columns=feature_columns, hidden_units=[81, 81, 49, 25])
-ds_predict_tf  = regressor.predict(x_test) 
+model_fn = importlib.import_module('%s.model_fn' % model_dir)
+estimator = model_fn.GetEstimator(model_dir)
+ds_predict_tf  = estimator.predict(x_test) 
 
 # Print out human readable.
 BOARD_CHAR = { -1: 'O', 1: '@', 0: '.' }
 TURN_MSG = { 1: 'BLACK(@)', -1: 'WHITE(O)' }
-RESULT_MSG = { 0: 'WHITE', 1: 'JIGO', 2: 'BLACK' }
+
+def GetResultMsg(result):
+  if result > 0:
+    return 'BLACK'
+  elif result < 0:
+    return 'WHITE'
+  return 'JIGO'
+  
 idx = 0
 for pred in ds_predict_tf:
   feature = x_test[idx]
@@ -48,6 +54,6 @@ for pred in ds_predict_tf:
         outstr = outstr + BOARD_CHAR[board[pos]]
       pos = pos + 1
     print(outstr)
-  print('Last move %s, predict(W(-1)~B(1)): %f, real: %s\n' %
-        (TURN_MSG[last_move], pred - 1, RESULT_MSG[y_test[idx]]))
+  print('Last move %s, predict: %f, real: %s (%f)\n' %
+        (TURN_MSG[last_move], pred - 1, GetResultMsg(y_test[idx]), y_test[idx]))
   idx = idx + 1

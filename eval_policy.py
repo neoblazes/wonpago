@@ -3,6 +3,7 @@
 import numpy as np
 import tensorflow as tf
 
+import importlib
 import sys
 
 import play_go
@@ -13,17 +14,13 @@ if len(sys.argv) < 2:
   exit(1)
 model_dir = sys.argv[1]
 
+# Load model
+model_fn = importlib.import_module('%s.model_fn' % model_dir)
+estimator = model_fn.GetEstimator(model_dir)
 
 # Print out human readable.
 def PrintBoard(feature, pred):
-  print('%s, predict(W(-1)~B(1)): %f\n' % (play_go.SPrintBoard(feature), pred - 1))
-
-
-# Load model and predict
-feature_columns = [tf.contrib.layers.real_valued_column("", dimension=84)]
-regressor = tf.contrib.learn.DNNRegressor(
-    model_dir=model_dir,
-    feature_columns=feature_columns, hidden_units=[81, 81, 49, 25])
+  print('%s, predict(W(-1)~B(1)): %f\n' % (play_go.SPrintBoard(feature), pred))
 
 # Main loop
 while True:
@@ -38,13 +35,13 @@ while True:
   board, last_move, ko = play_go.FromFeature(feature)
   next_move = -last_move
   x_test = np.array([feature], dtype=float)
-  PrintBoard(feature, list(regressor.predict(x_test))[0])
+  PrintBoard(feature, list(estimator.predict(x_test))[0])
 
   # get all features one step forward
   features = play_go.FowardFeatures(feature)
   # Batch eval (for performance)  
   x_test = np.array(features, dtype=float)
-  pred_tf = regressor.predict(x_test)
+  pred_tf = estimator.predict(x_test)
   move_scores = {}
   idx = 0
   for pred in pred_tf:

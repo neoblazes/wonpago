@@ -6,8 +6,11 @@
 import numpy as np
 import tensorflow as tf
 
+import importlib
 import random
 import sys
+
+import play_go
 
 if len(sys.argv) < 4:
   print('Usage: python opening_predict.py <model_dir> <num_sequence> <num_predict>')
@@ -29,36 +32,21 @@ tail = [(num_sequence % 2) * 2 - 1  # mark last_move
 for _ in range(num_predict):
   random.shuffle(board)
   kifus.append(board + tail)
-
 x_test = np.array(kifus, dtype=float)
-feature_columns = [tf.contrib.layers.real_valued_column("", dimension=84)]
 
 # Load model and predict
-regressor = tf.contrib.learn.DNNRegressor(
-    model_dir=model_dir,
-    feature_columns=feature_columns, hidden_units=[81, 81, 49, 25])
-ds_predict_tf  = regressor.predict(x_test)
+model_fn = importlib.import_module('%s.model_fn' % model_dir)
+estimator = model_fn.GetEstimator(model_dir)
+ds_predict_tf  = estimator.predict(x_test)
+
+# Print out human readable.
+def PrintBoard(feature, pred):
+  print('%s, predict(W(-1)~B(1)): %f\n' % (play_go.SPrintBoard(feature), pred))
 
 # Print out human readable.
 BOARD_CHAR = { -1: 'O', 1: '@', 0: '.' }
 TURN_MSG = { 1: 'BLACK(@)', -1: 'WHITE(O)' }
-RESULT_MSG = { 0: 'WHITE', 1: 'JIGO', 2: 'BLACK' }
 idx = 0
 for pred in ds_predict_tf:
-  feature = x_test[idx]
-  board = feature[:81]
-  last_move = feature[81]
-  ko_pos = feature[82:84]
-  pos = 0
-  for row in range(1, 10):
-    outstr = ''
-    for col in range(1, 10):
-      if row == ko_pos[0] and col == ko_pos[1]:
-        outstr = outstr + '*'
-      else:
-        outstr = outstr + BOARD_CHAR[board[pos]]
-      pos = pos + 1
-    print outstr
-  print('Last move %s, predict((W(-1)~B(1)): %f\n' %
-        (TURN_MSG[last_move], pred - 1))
+  PrintBoard(x_test[idx], pred)
   idx = idx + 1
