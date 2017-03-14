@@ -9,7 +9,7 @@ from collections import defaultdict
 
 import play_go
 
-SKIP_SEQUENCE = 0  # Evaluates from first move with discounted result. (0.1~)
+SKIP_SEQUENCE = -1  # Evaluates from first move with discounted result. (0.1~)
 
 def GetWinner(summary, sequence):
   if summary.find('RE[B') > 0:
@@ -47,8 +47,11 @@ def GetBlackTerritory(summary, sequence):
 
 # Main code.
 if len(sys.argv) == 1:
-  print('Usage: python parer_kifu.py <file_pattern>')
+  print('Usage: python parer_kifu.py <file_pattern> [liberty?y]')
   exit(1)
+feature_fn = play_go.ToFeature
+if len(sys.argv) > 2:
+  feature_fn = play_go.ToFeatureWithLiberty
 
 win_count = defaultdict(lambda: 0)
 for file in glob.glob(sys.argv[1]):
@@ -77,7 +80,7 @@ for file in glob.glob(sys.argv[1]):
       discount = min(1, seq_cnt / (len(sequence) * 1.0) + 0.1)
       # For easier training, encode black stone to positive number and negative for white one.
       # Also by adding 1, makes the result to float. 0=white win, 1=jigo and 2=black win.
-      feature = play_go.ToFeature(board, ENCODE[move[0]], ko, discount * ENCODE[result])
+      feature = feature_fn(board, ENCODE[move[0]], ko, discount * ENCODE[result])
       print(','.join(list(map(str, feature))))
     seq_cnt = seq_cnt + 1
 logging.warning('win_count: %s' % str(win_count))

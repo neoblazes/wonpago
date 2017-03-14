@@ -11,15 +11,15 @@ def GetConnented(board, group, x, y):
   for pos in NearPositions(x, y):
     if board[pos[0]][pos[1]] == stone and not (pos[0], pos[1]) in group:
       GetConnented(board, group, pos[0], pos[1])
-      
+
 def GetLiberty(board, group):
+  liberty = set()
   # It should check dup of liberty. Just ok to check 0 or Ko.
-  liberty = 0
   for pos in group:
     for n_pos in NearPositions(pos[0], pos[1]):
       if board[n_pos[0]][n_pos[1]] == 0:
-        liberty = liberty + 1
-  return liberty
+        liberty.add((n_pos[0], n_pos[1]))        
+  return len(liberty)
 
 def CaptureGroup(board, group):
   for pos in group:
@@ -27,6 +27,21 @@ def CaptureGroup(board, group):
 
 def IsOpponentStone(target, source):
   return target in (1,-1) and target != source
+
+def GetLibertyMap(board):
+  liberty_map = [0] * 81
+  idx = 0
+  for i in range(1,10):
+    for j in range(1,10):
+      # Assumes that there is no liberty == 0 stone.
+      if (board[i][j] == 1 or board[i][j] == -1) and liberty_map[idx] == 0:
+        group = set()
+        GetConnented(board, group, i, j)
+        liberty = GetLiberty(board, group)
+        for pos in group:
+          liberty_map[(pos[0] - 1) * 9 + pos[1] - 1] = liberty
+      idx = idx + 1
+  return liberty_map
 
 def PlayGo(board, stone, x, y):
   board[x][y] = stone
@@ -86,16 +101,6 @@ def InitBoard():
     board[10][i] = 'E'
   return board
 
-def ToFeature(board, last_move, ko, result):
-  if ko == None:
-    ko = [0, 0]
-  else:
-    board[ko[0]][ko[1]] = last_move / 2  # Set 0.5 or -0.5 for ko position.
-  board_serial = [item for innerlist in board[1:-1] for item in innerlist[1:-1]]
-  if not ko == None:
-    board[ko[0]][ko[1]] = 0
-  return board_serial + [last_move] + ko + [result]
-
 def FromFeature(feature):
   board = InitBoard()  
   last_move = int(feature[81])
@@ -108,6 +113,30 @@ def FromFeature(feature):
         board[i][j] = feature[idx]
       idx = idx + 1
   return board, last_move, ko
+
+def ToFeature(board, last_move, ko, result):
+  if ko == None:
+    ko = [0, 0]
+  else:
+    board[ko[0]][ko[1]] = last_move / 2  # Set 0.5 or -0.5 for ko position.
+  board_serial = [item for innerlist in board[1:-1] for item in innerlist[1:-1]]
+  if not ko == None:
+    board[ko[0]][ko[1]] = 0
+  return board_serial + [last_move] + ko + [result]
+
+def ToFeatureWithLiberty(board, last_move, ko, result):
+  if ko == None:
+    ko = [0, 0]
+  else:
+    board[ko[0]][ko[1]] = last_move / 2  # Set 0.5 or -0.5 for ko position.
+  board_serial = [item for innerlist in board[1:-1] for item in innerlist[1:-1]]
+  if not ko == None:
+    board[ko[0]][ko[1]] = 0
+  return board_serial + [last_move] + ko + GetLibertyMap(board) + [result]
+
+def AttachLibertyToFeature(feature):
+  board, last_move, ko = FromFeature(feature)
+  return ToFeatureWithLiberty(board, last_move, ko, feature[-1])
 
 # Print out human readable.
 BOARD_CHAR = { -1: 'O', 1: '@', 0: '.' }

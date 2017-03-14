@@ -31,7 +31,7 @@ while True:
     feature = feature.split(',')
   if len(feature) < 84:
     continue
-  feature = list(map(float, feature))[:84]
+  feature = list(map(float, feature))[:-1]  # Remove result column
   board, last_move, ko = play_go.FromFeature(feature)
   next_move = -last_move
   x_test = np.array([feature], dtype=float)

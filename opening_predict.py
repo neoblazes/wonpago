@@ -13,12 +13,15 @@ import sys
 import play_go
 
 if len(sys.argv) < 4:
-  print('Usage: python opening_predict.py <model_dir> <num_sequence> <num_predict>')
+  print('Usage: python opening_predict.py <model_dir> <num_sequence> <num_predict> [liberty?y]')
   exit(1)
 model_dir = sys.argv[1]
 num_sequence = int(sys.argv[2])
 num_predict = int(sys.argv[3])
 print('Test %d sequecne with model %s' % (num_sequence, model_dir))
+attach_liberty = False
+if len(sys.argv) > 4:
+  attach_liberty = True
 
 # Set up kifu
 kifus = []
@@ -31,7 +34,10 @@ tail = [(num_sequence % 2) * 2 - 1  # mark last_move
 # Shuffle board and add to kifu list
 for _ in range(num_predict):
   random.shuffle(board)
-  kifus.append(board + tail)
+  if attach_liberty:
+    kifus.append(play_go.AttachLibertyToFeature(board + tail)[:-1])  # remove result column
+  else:
+    kifus.append(board + tail)
 x_test = np.array(kifus, dtype=float)
 
 # Load model and predict
