@@ -122,7 +122,7 @@ def ToFeature(board, last_move, ko, result):
   board_serial = [item for innerlist in board[1:-1] for item in innerlist[1:-1]]
   if not ko == None:
     board[ko[0]][ko[1]] = 0
-  return board_serial + [last_move] + ko + [result]
+  return board_serial + [result] #  + [last_move] + ko + [result]
 
 def ToFeatureWithLiberty(board, last_move, ko, result):
   if ko == None:
@@ -132,7 +132,8 @@ def ToFeatureWithLiberty(board, last_move, ko, result):
   board_serial = [item for innerlist in board[1:-1] for item in innerlist[1:-1]]
   if not ko == None:
     board[ko[0]][ko[1]] = 0
-  return board_serial + [last_move] + ko + GetLibertyMap(board) + [result]
+  # Output 81*2 +1 for CNN model
+  return board_serial + GetLibertyMap(board) + [result]
 
 def AttachLibertyToFeature(feature):
   board, last_move, ko = FromFeature(feature)

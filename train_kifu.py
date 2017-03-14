@@ -28,33 +28,39 @@ config.tf_config.gpu_options.allow_growth=True
 estimator = model_fn.GetEstimator(model_dir, config)
 
 # Read data set
-def flip_vertical(feature):
-  for i in range(4):
-    feature[i*9:i*9+9], feature[81-i*9-9:81-i*9] = feature[81-i*9-9:81-i*9], feature[i*9:i*9+9]
-    # Also flip liberty
-    if len(feature) > 85:
-      feature[i*9+85:i*9+9+85], feature[85+81-i*9-9:85+81-i*9] = feature[85+81-i*9-9:85+81-i*9], feature[i*9+85:i*9+9+85]
-
-def flip_horizontal(feature):
-  for i in range(9):
-    feature[i*9:i*9+9] = np.flipud(feature[i*9:i*9+9])
-    # Also flip liberty
-    if len(feature) > 85:
-      feature[i*9+85:i*9+9+85] = np.flipud(feature[i*9+85:i*9+9+85])
-
 training_set = tf.contrib.learn.datasets.base.load_csv_without_header(
     filename=training_csv, target_dtype=np.float32, features_dtype=np.float32, target_column=-1)
 x_train, y_train = training_set.data, training_set.target
-# Expend to 4 flips.
-x_train_fv = x_train.copy()
-flip_vertical(x_train_fv)
-x_train_fh = x_train.copy()
-flip_horizontal(x_train_fh)
-x_train_fa = x_train_fh.copy()
-flip_vertical(x_train_fa)
-x_train = np.concatenate((x_train, x_train_fv, x_train_fh, x_train_fa), axis=0)
-y_train = np.concatenate(([y_train] * 4), axis=0)
 
 # Training
 logging.getLogger().setLevel(logging.INFO)
+#estimator.fit(x=x_train, y=y_train, steps=steps)
+
+# Expend to 4 flips.
+def flip_vertical(x_train):
+  for feature in x_train:
+    for i in range(0, 36, 9):
+      # Swap is not working
+      tmp = np.copy(feature[i:i+9])
+      feature[i:i+9] = feature[81-i-9:81-i]
+      feature[81-i-9:81-i] = tmp
+      # Also flip liberty
+      if len(feature) > 85:
+        tmp = np.copy(feature[i+81:i+9+81])
+        feature[i+81:i+9+81] = feature[162-i-9:162-i]
+        feature[162-i-9:162-i] = tmp
+
+def flip_horizontal(feature):
+  for feature in x_train:
+    for i in range(0, 81, 9):
+      feature[i:i+9] = np.flipud(feature[i:i+9])
+      # Also flip liberty
+      if len(feature) > 85:
+        feature[i+81:i+9+81] = np.flipud(feature[i+81:i+9+81])
+
+flip_vertical(x_train)
+estimator.fit(x=x_train, y=y_train, steps=steps)
+flip_horizontal(x_train)
+estimator.fit(x=x_train, y=y_train, steps=steps)
+flip_vertical(x_train)
 estimator.fit(x=x_train, y=y_train, steps=steps)
