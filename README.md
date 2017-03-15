@@ -7,7 +7,7 @@ ko_pos are actually not used by network, and the Ko position is marked as 0.5 or
 The prediction is value -1 ~ 1 where -1 means white win and 1 means black win, while 0 means jigo.
 
 Sample execution:
-0) Install TensorFlow (and CUDA), get the git files.
+0) Install TensorFlow (and CUDA, cuDNN), get the git files.
 $ git clone https://github.com/neoblazes/wonpago
 
 1) Unzip kifu file
