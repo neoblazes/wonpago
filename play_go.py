@@ -83,13 +83,8 @@ def FowardFeatures(feature):
       board2 = copy.deepcopy(board)  # make clone for a move
       valid, ko = PlayGo(board2, next_move, i, j)
       if not valid:
-        continue
-      feature2 = list(feature)  # make clone for eval
-      feature2[(i-1)*9+j-1] = next_move
-      feature2[-3] = next_move
-      if ko != None:
-        feature2[-2:] = ko[0:2]
-      features.append(feature2)
+        continue      
+      features.append(ToFeatureWithLiberty(board2, next_move, ko, 0)[:-1])
   return features
 
 def InitBoard():
