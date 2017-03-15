@@ -55,8 +55,6 @@ def model_fn(features, targets, mode, params):
       eval_metric_ops=eval_metric_ops)
 
 def GetEstimator(model_dir, config=None):
-  config = tf.contrib.learn.RunConfig()
-  config.tf_config.gpu_options.allow_growth=True
   model_params = {"learning_rate": 0.001}
   return tf.contrib.learn.Estimator(
     model_dir=model_dir, config=config, model_fn=model_fn, params=model_params)
