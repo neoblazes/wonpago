@@ -16,16 +16,19 @@ $ unzip go9-large.zip -d go9-large
 2) Generate features from kifu
 $ python parse_kifu.py "go9-large/*" > large.csv
 
-3) Train model
-$ python train_kifu.py cnn_82x2_3_mini large.csv 1000
+3) Split training file based on your machine power
+$ split -l 100000 -d large.csv large.csv.
 
-4) Test predict againt test.csv
+4) Train model
+$ for f in large.csv.*; do python train_kifu.py cnn_82x2_3_mini $f 200; done
+
+5) Test predict againt test.csv
 $ python test_predict.py cnn_82x2_3_mini test.csv
 
-5) Test predict for random opening positions
+6) Test predict for random opening positions
 $ python opening_predict.py cnn_82x2_3_mini 3 10
 
-6) Get recommended move for a feature
+7) Get recommended move for a feature
 $ python eval_policy.py cnn_82x2_3_mini
 ...[give any of feature sample from csv files]
 ex) 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,-1,0,-1,0,0,0,-1,1,1,-1,0,1,0,0,1,1,-1,1,-1,0,0,0,0,1,-1,-1,-1,1,1,0,0,0,-1,1,0,0,0,0,0,0,0,-1,0,-1,-1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,5,0,3,0,0,0,1,4,4,5,0,3,0,0,3,3,2,4,5,0,0,0,0,3,2,2,2,4,4,0,0,0,4,2,0,0,0,0,0,0,0,4,0,5,5,3,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,0,0.5901960784313726
