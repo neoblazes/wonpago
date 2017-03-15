@@ -34,13 +34,13 @@ while True:
   feature = list(map(float, feature))[:-1]  # Remove result column
   board, last_move, ko = play_go.FromFeature(feature)
   next_move = -last_move
-  x_test = np.array([feature], dtype=float)
+  x_test = np.array([feature], dtype=np.float32)
   PrintBoard(feature, list(estimator.predict(x_test))[0])
 
   # get all features one step forward
   features = play_go.FowardFeatures(feature)
   # Batch eval (for performance)  
-  x_test = np.array(features, dtype=float)
+  x_test = np.array(features, dtype=np.float32)
   pred_tf = estimator.predict(x_test)
   move_scores = {}
   idx = 0

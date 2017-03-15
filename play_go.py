@@ -157,7 +157,7 @@ def SPrintBoard(feature):
       else:
         outstr = outstr + BOARD_CHAR[board[pos]]
       pos = pos + 1    
-    lines.append('%s  %s' % (outstr, liberty[pos-9:pos]))
+    lines.append('%s  %s' % (outstr, [int(l) for l in liberty[pos-9:pos]]))
   lines.append('Last move %s' % TURN_MSG[int(last_move)])
   return '\n'.join(lines)
 
