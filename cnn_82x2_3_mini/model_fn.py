@@ -8,22 +8,25 @@ from tensorflow.contrib.learn.python.learn.estimators import model_fn as model_f
 def model_fn(features, targets, mode, params):
   # Features areboard[81] + liberty[81] + last_move[1] + ko[2].
   # Extracts 9x9x2 from board and liberty map for conv2d.
-  board_features, last_move, ko = tf.split(features, [81*2, 1, 2], axis=1)  
+  board_features, last_move, ko = tf.split(features, [81*2, 1, 2], axis=1)
   board = tf.reshape(board_features, [-1, 9, 9, 2])
-  conv1 = tf.layers.conv2d(inputs=board, filters=64, kernel_size=[5, 5],
-      padding="same", activation=tf.nn.relu) # out 9x9
+  # No relu, input includes negative. 50x25x16 = 20000
+  conv1 = tf.layers.conv2d(inputs=board, filters=16, kernel_size=[5, 5],
+      padding="same", activation=tf.nn.softsign)
   conv2 = tf.layers.conv2d(inputs=conv1, filters=32, kernel_size=[3, 3],
-      padding="same", activation=tf.nn.relu)
-  conv3 = tf.layers.conv2d(inputs=conv2, filters=32, kernel_size=[3, 3],
-      padding="same", activation=tf.nn.relu)
+      padding="same", activation=tf.nn.softsign) # 16*9*32 = 4608
+  conv3 = tf.layers.conv2d(inputs=conv2, filters=16, kernel_size=[3, 3],
+      padding="same", activation=tf.nn.softsign) # 32*9*16 = 4608
   conv4 = tf.layers.conv2d(inputs=conv3, filters=1, kernel_size=[1, 1],
-      padding="same", activation=tf.nn.relu) # maybe for border?
+      padding="same", activation=tf.nn.softsign) # maybe for border?
   # Flattens conv2d output and attaches last_move info.
   conv_flat = tf.concat([tf.reshape(conv4, [-1, 9 * 9 * 1]), last_move], 1)
 
   # Dense layer and output.
-  dense1 = tf.layers.dense(inputs=conv_flat, units=64, activation=tf.nn.relu)
-  dense2 = tf.layers.dense(inputs=dense1, units=64, activation=tf.nn.relu)
+  # 82*64 = 5248
+  dense1 = tf.layers.dense(inputs=conv_flat, units=64, activation=tf.nn.softsign)
+  # 64*64 = 4096
+  dense2 = tf.layers.dense(inputs=dense1, units=64, activation=tf.nn.softsign)
   output_layer = tf.contrib.layers.linear(dense2, 1)
   predictions = tf.reshape(output_layer, [-1])
 
