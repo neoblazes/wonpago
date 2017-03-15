@@ -1,8 +1,37 @@
-# wonpago
-Work for Wonpa-go
+It uses [board]*81 + [liberty] * 81 + last_move + ko_pos[2] as feature.
+Note that the black stone is represented as '1', white stone as '-1' and empty space '0' on board.
+ko_pos are actually not used by network, and the Ko position is marked as 0.5 or -0.5 on board, corresponding to whom made the Ko.
 
-Run log for training
+The prediction is value -1 ~ 1 where -1 means white win and 1 means black win, while 0 means jigo.
 
+Sample execution:
+1) Unzip kifu file
+$ unzip go9-large.zip -d go9-large
+
+2) Generate features from kifu
+$ python parse_kifu.py "go9-large/*" > large.csv
+
+3) Train model
+$ python train_kifu.py cnn_82x2_3_mini large.csv 1000
+
+4) Test predict againt test.csv
+$ python test_predict.py cnn_82x2_3_mini test.csv
+
+5) Test predict for random opening positions
+$ python opening_predict.py cnn_82x2_3_mini 3 10
+
+6) Get recommended move for a feature
+$ python eval_policy.py cnn_82x2_3_mini
+...[give any of feature sample from csv files]
+ex) 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,-1,0,-1,0,0,0,-1,1,1,-1,0,1,0,0,1,1,-1,1,-1,0,0,0,0,1,-1,-1,-1,1,1,0,0,0,-1,1,0,0,0,0,0,0,0,-1,0,-1,-1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,5,0,3,0,0,0,1,4,4,5,0,3,0,0,3,3,2,4,5,0,0,0,0,3,2,2,2,4,4,0,0,0,4,2,0,0,0,0,0,0,0,4,0,5,5,3,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,0,0.5901960784313726
+
+
+
+
+Mar 15
+
+Modulized all logic and make network model configuable per model_dir.
+Establish CNN model with liberty map and turn info.
 
 Mar 10
 
