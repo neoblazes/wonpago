@@ -86,9 +86,9 @@ def FowardFeatures(feature):
         continue
       feature2 = list(feature)  # make clone for eval
       feature2[(i-1)*9+j-1] = next_move
-      feature2[81] = next_move
+      feature2[-3] = next_move
       if ko != None:
-        feature2[82:84] = ko[0:2]
+        feature2[-2:] = ko[0:2]
       features.append(feature2)
   return features  
 
@@ -103,8 +103,8 @@ def InitBoard():
 
 def FromFeature(feature):
   board = InitBoard()  
-  last_move = int(feature[81])
-  ko = feature[82:84]
+  last_move = int(feature[-3])
+  ko = feature[-2:]
   idx = 0
   for i in range(1,10):
     for j in range(1,10):
@@ -122,7 +122,7 @@ def ToFeature(board, last_move, ko, result):
   board_serial = [item for innerlist in board[1:-1] for item in innerlist[1:-1]]
   if not ko == None:
     board[ko[0]][ko[1]] = 0
-  return board_serial + [result] #  + [last_move] + ko + [result]
+  return board_serial + [last_move] + ko + [result]
 
 def ToFeatureWithLiberty(board, last_move, ko, result):
   if ko == None:
@@ -132,21 +132,22 @@ def ToFeatureWithLiberty(board, last_move, ko, result):
   board_serial = [item for innerlist in board[1:-1] for item in innerlist[1:-1]]
   if not ko == None:
     board[ko[0]][ko[1]] = 0
-  # Output 81*2 +1 for CNN model
-  return board_serial + GetLibertyMap(board) + [result]
+  # Output 81*2 +4 for CNN model
+  return board_serial + GetLibertyMap(board) + [last_move] + ko + [result]
 
 def AttachLibertyToFeature(feature):
   board, last_move, ko = FromFeature(feature)
-  return ToFeatureWithLiberty(board, last_move, ko, feature[-1])
+  return ToFeatureWithLiberty(board, last_move, ko, 0)
 
 # Print out human readable.
 BOARD_CHAR = { -1: 'O', 1: '@', 0: '.' }
-TURN_MSG = { 1: 'BLACK(@)', -1: 'WHITE(O)' }
+TURN_MSG = { 1: 'BLACK(@)', -1: 'WHITE(O)', 0: '?' }
 def SPrintBoard(feature):
   lines = []
   board = feature[:81]
-  last_move = feature[81]
-  ko = feature[82:84]
+  liberty = feature[81:81+81]
+  last_move = feature[-3]
+  ko = feature[-2:]
   pos = 0
   for row in range(1, 10):
     outstr = ''
@@ -155,9 +156,9 @@ def SPrintBoard(feature):
         outstr = outstr + '*'
       else:
         outstr = outstr + BOARD_CHAR[board[pos]]
-      pos = pos + 1
-    lines.append(outstr)
-  lines.append('Last move %s' % TURN_MSG[last_move])
+      pos = pos + 1    
+    lines.append('%s  %s' % (outstr, liberty[pos-9:pos]))
+  lines.append('Last move %s' % TURN_MSG[int(last_move)])
   return '\n'.join(lines)
 
  

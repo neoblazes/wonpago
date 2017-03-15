@@ -1,8 +1,6 @@
 # Play Go from Kifu.
 # Sample usages:
 # python parse_kifu.py small/* > small.csv
-# python parse_kifu.py small/* B > small_black.csv
-# python parse_kifu.py small/* W > small_white.csv
 
 import glob
 import logging
@@ -37,11 +35,7 @@ def PlayGo(board, move):
 if len(sys.argv) == 1:
   print('Usage: python parer_kifu.py <file_pattern> [B/W]')
   exit(1)
-SKIP_STONE = None
-feature_fn = play_go.ToFeature
-if len(sys.argv) > 2:
-  feature_fn = play_go.ToFeatureWithLiberty
-  SKIP_STONE = 1 - ENCODE[sys.argv[2]]
+feature_fn = play_go.ToFeatureWithLiberty  # board+liberty is default now. Use play_go.ToFeature for no liberty.
 
 win_count = defaultdict(lambda: 0)
 for file in glob.glob(sys.argv[1]):

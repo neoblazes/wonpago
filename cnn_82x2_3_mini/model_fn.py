@@ -1,4 +1,4 @@
-# Model for DNN regressor
+# Model for CNN estimator
 
 import numpy as np
 import tensorflow as tf
@@ -6,10 +6,10 @@ import tensorflow as tf
 from tensorflow.contrib.learn.python.learn.estimators import model_fn as model_fn_lib
 
 def model_fn(features, targets, mode, params):
-  # Build 9x9x2 from board and liberty map
-  print(features)
-  first_hidden_layer = tf.contrib.layers.relu(features, 10)
-  board = tf.reshape(features, [-1, 9, 9, 2])
+  # Features areboard[81] + liberty[81] + last_move[1] + ko[2].
+  # Extracts 9x9x2 from board and liberty map for conv2d.
+  board_features, last_move, ko = tf.split(features, [81*2, 1, 2], axis=1)  
+  board = tf.reshape(board_features, [-1, 9, 9, 2])
   conv1 = tf.layers.conv2d(inputs=board, filters=64, kernel_size=[5, 5],
       padding="same", activation=tf.nn.relu) # out 9x9
   conv2 = tf.layers.conv2d(inputs=conv1, filters=32, kernel_size=[3, 3],
@@ -18,11 +18,22 @@ def model_fn(features, targets, mode, params):
       padding="same", activation=tf.nn.relu)
   conv4 = tf.layers.conv2d(inputs=conv3, filters=1, kernel_size=[1, 1],
       padding="same", activation=tf.nn.relu) # maybe for border?
-  conv_flat = tf.reshape(conv4, [-1, 9 * 9 * 1])
-  dense = tf.layers.dense(inputs=conv_flat, units=256, activation=tf.nn.relu)
-  output_layer = tf.contrib.layers.linear(dense, 1)
+  # Flattens conv2d output and attaches last_move info.
+  conv_flat = tf.concat([tf.reshape(conv4, [-1, 9 * 9 * 1]), last_move], 1)
+
+  # Dense layer and output.
+  dense1 = tf.layers.dense(inputs=conv_flat, units=64, activation=tf.nn.relu)
+  dense2 = tf.layers.dense(inputs=dense1, units=64, activation=tf.nn.relu)
+  output_layer = tf.contrib.layers.linear(dense2, 1)
   predictions = tf.reshape(output_layer, [-1])
 
+  # For predict mode.
+  if targets == None:
+    return model_fn_lib.ModelFnOps(
+      mode=mode,
+      predictions=predictions)
+
+  # For modes with targets.
   loss = tf.losses.mean_squared_error(targets, predictions)
 
   eval_metric_ops = {

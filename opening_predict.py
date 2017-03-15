@@ -13,15 +13,12 @@ import sys
 import play_go
 
 if len(sys.argv) < 4:
-  print('Usage: python opening_predict.py <model_dir> <num_sequence> <num_predict> [liberty?y]')
+  print('Usage: python opening_predict.py <model_dir> <num_sequence> <num_predict>')
   exit(1)
 model_dir = sys.argv[1]
 num_sequence = int(sys.argv[2])
 num_predict = int(sys.argv[3])
 print('Test %d sequecne with model %s' % (num_sequence, model_dir))
-attach_liberty = False
-if len(sys.argv) > 4:
-  attach_liberty = True
 
 # Set up kifu
 kifus = []
@@ -34,11 +31,9 @@ tail = [(num_sequence % 2) * 2 - 1  # mark last_move
 # Shuffle board and add to kifu list
 for _ in range(num_predict):
   random.shuffle(board)
-  if attach_liberty:
-    kifus.append(play_go.AttachLibertyToFeature(board + tail)[:-1])  # remove result column
-  else:
-    kifus.append(board + tail)
-x_test = np.array(kifus, dtype=float)
+  kifus.append(play_go.AttachLibertyToFeature(board + tail)[:-1])  # remove result column
+x_test = np.array(kifus, dtype=np.float32)
+
 
 # Load model and predict
 model_fn = importlib.import_module('%s.model_fn' % model_dir)
@@ -47,6 +42,7 @@ ds_predict_tf  = estimator.predict(x_test)
 
 # Print out human readable.
 def PrintBoard(feature, pred):
+  print(feature)
   print('%s, predict(W(-1)~B(1)): %f\n' % (play_go.SPrintBoard(feature), pred))
 
 # Print out human readable.
