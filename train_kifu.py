@@ -12,6 +12,8 @@ import importlib
 import logging
 import sys
 
+from tensorflow.contrib.learn.python.learn.estimators.estimator import SKCompat
+
 if len(sys.argv) < 4:
   print('Usage: python train_kifu.py <dir> <training_csv> <steps>')
   exit(1)
@@ -22,10 +24,11 @@ steps=int(sys.argv[3])
 
 # Load network model.
 print('Working on directory: ', model_dir)
+logging.getLogger().setLevel(logging.INFO)
 model_fn = importlib.import_module('%s.model_fn' % model_dir)
 config = tf.contrib.learn.RunConfig()
 config.tf_config.gpu_options.allow_growth=True
-estimator = model_fn.GetEstimator(model_dir, config)
+estimator = SKCompat(model_fn.GetEstimator(model_dir, config))
 
 # Read data set
 training_set = tf.contrib.learn.datasets.base.load_csv_without_header(
@@ -34,7 +37,7 @@ x_train, y_train = training_set.data, training_set.target
 
 # Training
 logging.getLogger().setLevel(logging.INFO)
-#estimator.fit(x=x_train, y=y_train, steps=steps)
+estimator.fit(x=x_train, y=y_train, steps=steps)
 
 # Expend to 4 flips.
 def flip_vertical(x_train):
