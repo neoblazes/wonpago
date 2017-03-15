@@ -59,7 +59,7 @@ for file in glob.glob(sys.argv[1]):
   seq_cnt = 0
   for move in sequence:
     valid, ko = PlayGo(board, move)
-    if seq_cnt > SKIP_SEQUENCE and valid and ENCODE[move[0]] != SKIP_STONE:
+    if seq_cnt > SKIP_SEQUENCE and valid:
       # Assumes that the win rate increases linearly. 0.1 from first move and 1 on 90% move.
       discount = min(1, seq_cnt / (len(sequence) * 1.0) + 0.1)
       # For easier training, encode black stone to positive number and negative for white one.
