@@ -1,4 +1,6 @@
-It uses [board]*81 + [liberty] * 81 + last_move + ko_pos[2] as feature.
+The model is defined by [model_dir]/model_fn.py.
+
+The network models use [board]*81 + [liberty] * 81 + last_move + ko_pos[2] as feature.
 Note that the black stone is represented as '1', white stone as '-1' and empty space '0' on board.
 ko_pos are actually not used by network, and the Ko position is marked as 0.5 or -0.5 on board, corresponding to whom made the Ko.
 
