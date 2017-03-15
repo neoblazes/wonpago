@@ -18,7 +18,7 @@ def GetLiberty(board, group):
   for pos in group:
     for n_pos in NearPositions(pos[0], pos[1]):
       if board[n_pos[0]][n_pos[1]] == 0:
-        liberty.add((n_pos[0], n_pos[1]))        
+        liberty.add((n_pos[0], n_pos[1]))
   return len(liberty)
 
 def CaptureGroup(board, group):
@@ -45,7 +45,7 @@ def GetLibertyMap(board):
 
 def PlayGo(board, stone, x, y):
   board[x][y] = stone
-  
+
   # Capture stones
   capture_count = 0
   capture_pos = None
@@ -53,7 +53,7 @@ def PlayGo(board, stone, x, y):
     if IsOpponentStone(board[pos[0]][pos[1]], stone):
       group = set()
       GetConnented(board, group, pos[0], pos[1])
-      liberty = GetLiberty(board, group)      
+      liberty = GetLiberty(board, group)
       if liberty == 0:
         CaptureGroup(board, group)
         capture_count = capture_count + len(group)
@@ -90,7 +90,7 @@ def FowardFeatures(feature):
       if ko != None:
         feature2[-2:] = ko[0:2]
       features.append(feature2)
-  return features  
+  return features
 
 def InitBoard():
   board = [x[:] for x in [[0] * 11] * 11]
@@ -102,7 +102,7 @@ def InitBoard():
   return board
 
 def FromFeature(feature):
-  board = InitBoard()  
+  board = InitBoard()
   last_move = int(feature[-3])
   ko = feature[-2:]
   idx = 0
@@ -156,12 +156,12 @@ def SPrintBoard(feature):
         outstr = outstr + '*'
       else:
         outstr = outstr + BOARD_CHAR[board[pos]]
-      pos = pos + 1    
+      pos = pos + 1
     lines.append('%s  %s' % (outstr, [int(l) for l in liberty[pos-9:pos]]))
   lines.append('Last move %s' % TURN_MSG[int(last_move)])
   return '\n'.join(lines)
 
- 
+
 # Main loop
 def main():
   while True:

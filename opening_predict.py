@@ -42,7 +42,6 @@ ds_predict_tf  = estimator.predict(x_test)
 
 # Print out human readable.
 def PrintBoard(feature, pred):
-  print(feature)
   print('%s, predict(W(-1)~B(1)): %f\n' % (play_go.SPrintBoard(feature), pred))
 
 # Print out human readable.
