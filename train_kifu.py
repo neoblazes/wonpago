@@ -24,7 +24,7 @@ steps=int(sys.argv[3])
 print('Working on directory: ', model_dir)
 logging.getLogger().setLevel(logging.INFO)
 model_fn = importlib.import_module('%s.model_fn' % model_dir)
-config = tf.contrib.learn.RunConfig()
+config = tf.contrib.learn.RunConfig(save_summary_steps=10000)
 config.tf_config.gpu_options.allow_growth=True
 estimator = model_fn.GetEstimator(model_dir, config)
 
