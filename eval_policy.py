@@ -32,7 +32,7 @@ while True:
   if len(feature) < 84:
     continue
   feature = list(map(float, feature))[:-1]  # Remove result column
-  board, last_move, ko = play_go.FromFeature(feature)
+  board, last_move, ko = play_go.FromFeature(feature[:81] + feature[-3:]) # Uses board only
   next_move = -last_move
   x_test = np.array([play_go.ToFeature(board, last_move, ko, 0, True, True)[:-1]], dtype=np.float32)
   PrintBoard(feature, list(estimator.predict(x_test))[0])
