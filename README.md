@@ -16,11 +16,12 @@ $ unzip go9-large.zip -d go9-large
 2) Generate features from kifu
 $ python parse_kifu.py "go9-large/*" > large.csv
 
-3) Split training file based on your machine power
-$ split -l 100000 -d large.csv large.csv.
+3) Train model
+$ python train_kifu.py cnn_82x2_3_mini large.csv 1000000
 
-4) Train model
-$ for f in large.csv.*; do python train_kifu.py cnn_82x2_3_mini $f 200; done
+4) Trace the training progress from Tensor Board (binary has bug on linux now)
+$ python /usr/local/lib/python2.7/dist-packages/tensorflow/tensorboard/tensorboard.py --logdir=<your_model_dir>
+http://localhost:6006/
 
 5) Test predict againt test.csv
 $ python test_predict.py cnn_82x2_3_mini test.csv
@@ -35,6 +36,11 @@ ex) 0,0,0,0,0,0,0,0,0,0,0,0,-1,0,0,0,0,0,0,-1,0,0,1,-1,1,0,0,0,1,-1,-1,-1,1,0,0,
 
 
 
+Mar 17
+
+Fixed batch_size bug. Now using 128 mini batch.
+No need to split the files anymore.
+$ split -l 100000 -d large.csv large.csv.
 
 Mar 15
 
