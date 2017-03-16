@@ -12,8 +12,6 @@ import importlib
 import logging
 import sys
 
-from tensorflow.contrib.learn.python.learn.estimators.estimator import SKCompat
-
 if len(sys.argv) < 4:
   print('Usage: python train_kifu.py <dir> <training_csv> <steps>')
   exit(1)
@@ -28,7 +26,7 @@ logging.getLogger().setLevel(logging.INFO)
 model_fn = importlib.import_module('%s.model_fn' % model_dir)
 config = tf.contrib.learn.RunConfig()
 config.tf_config.gpu_options.allow_growth=True
-estimator = SKCompat(model_fn.GetEstimator(model_dir, config))
+estimator = model_fn.GetEstimator(model_dir, config)
 
 # Read data set
 training_set = tf.contrib.learn.datasets.base.load_csv_without_header(
