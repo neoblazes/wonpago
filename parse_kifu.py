@@ -33,7 +33,7 @@ def PlayGo(board, move):
 
 # Main code.
 if len(sys.argv) == 1:
-  print('Usage: python parer_kifu.py <file_pattern> [full_feature]')
+  print('Usage: python parer_kifu.py <file_pattern> [output_simple]')
   exit(1)
 
 win_count = defaultdict(lambda: 0)
@@ -64,9 +64,9 @@ for file in glob.glob(sys.argv[1]):
       # For easier training, encode black stone to positive number and negative for white one.
       # Also by adding 1, makes the result to float. 0=white win, 1=jigo and 2=black win.
       if len(sys.argv) > 2:
-        feature = play_go.ToFeature(board, ENCODE[move[0]], ko, discount * ENCODE[result], True, True)
-      else:
         feature = play_go.ToFeature(board, ENCODE[move[0]], ko, discount * ENCODE[result])
+      else:
+        feature = play_go.ToFeature(board, ENCODE[move[0]], ko, discount * ENCODE[result], True, True)
       print(','.join(list(map(str, feature))))
     seq_cnt = seq_cnt + 1
 logging.warning('win_count: %s' % str(win_count))
