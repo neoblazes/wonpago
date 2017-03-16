@@ -56,6 +56,6 @@ def model_fn(features, targets, mode, params):
       eval_metric_ops=eval_metric_ops)
 
 def GetEstimator(model_dir, config=None):
-  model_params = {"learning_rate": 0.00001}
+  model_params = {"learning_rate": 0.0001}
   return tf.contrib.learn.Estimator(
     model_dir=model_dir, config=config, model_fn=model_fn, params=model_params)
