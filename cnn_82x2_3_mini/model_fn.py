@@ -11,16 +11,16 @@ def model_fn(features, targets, mode, params):
   board_features, _, _ = tf.split(features, [81*4, 1, 2], axis=1)
   board = tf.reshape(board_features, [-1, 9, 9, 4])
   # No relu, input includes negative. 4x25x64 = 6400
-  conv1 = tf.layers.conv2d(inputs=board, filters=64, kernel_size=[5, 5],
+  conv_in = tf.layers.conv2d(inputs=board, filters=64, kernel_size=[5, 5],
       padding="same")
-  conv2 = tf.layers.conv2d(inputs=conv1, filters=16, kernel_size=[3, 3],
+  conv1 = tf.layers.conv2d(inputs=conv_in, filters=16, kernel_size=[3, 3],
       padding="same") # 64*9*16 = 9216
-  conv3 = tf.layers.conv2d(inputs=conv2, filters=16, kernel_size=[3, 3],
+  conv2 = tf.layers.conv2d(inputs=conv1, filters=16, kernel_size=[3, 3],
       padding="same") # 16*9*16 = 2304
-  conv4 = tf.layers.conv2d(inputs=conv3, filters=1, kernel_size=[1, 1],
+  conv_out = tf.layers.conv2d(inputs=conv2, filters=1, kernel_size=[1, 1],
       padding="same") # To reduce size
   # Flattens conv2d output and attaches last_move info.
-  conv_flat = tf.reshape(conv4, [-1, 9 * 9 * 1])
+  conv_flat = tf.reshape(conv_out, [-1, 9 * 9 * 1])
 
   # Dense layer and output.
   # 81*64 = 5184

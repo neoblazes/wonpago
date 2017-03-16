@@ -1,6 +1,7 @@
 # Library to play Go.
 
 import copy
+import logging
 
 def NearPositions(x, y):
   return [pos for pos in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
@@ -74,7 +75,7 @@ def PlayGo(board, stone, x, y):
       return True, [capture_pos[0], capture_pos[1]]
   return True, None
 
-def GetValidMoveMap(board, last_move, ko):
+def GetValidMoveMap(board, last_move, ko, liberty_map):
   ko_tuple = tuple(ko)
   moves = [0] * 81  
   next_move = -last_move
@@ -85,10 +86,20 @@ def GetValidMoveMap(board, last_move, ko):
       idx = idx + 1
       if not board[i][j] == 0 or (i, j) == ko_tuple:  # don't compare list
         continue
-      board2 = copy.deepcopy(board)  # make clone for a move
-      valid, ko = PlayGo(board2, next_move, i, j)
-      if not valid:
-        continue
+      need_play = True
+      # Checks self liberty.
+      for pos in NearPositions(i, j):
+        if (board[pos[0]][pos[1]] == 0 or
+            (board[pos[0]][pos[1]] == next_move and
+             liberty_map[(pos[0]-1)*9+pos[1]-1] > 1)):
+          need_play = False
+      if need_play:
+        board2 = copy.deepcopy(board)  # make clone for a move
+        valid, ko = PlayGo(board2, next_move, i, j)        
+        if not valid:
+          if not need_play:
+            logging.critical('Bug on liberty check, (%d, %d)', i , j)
+          continue
       moves[idx] = next_move
   return moves
 
@@ -132,11 +143,14 @@ def ToFeature(board, last_move, ko, result, add_liberty=False, add_move=False):
   if ko == None:
     ko = [0, 0]
   board_serial = [item for innerlist in board[1:-1] for item in innerlist[1:-1]]
+  liberty_map = None
   if add_liberty:
     liberty_map, group_map = GetLibertyMap(board)
     board_serial = board_serial + liberty_map + group_map
   if add_move:
-    board_serial = board_serial + GetValidMoveMap(board, last_move, ko)
+    if liberty_map == None:
+      liberty_map, _ = GetLibertyMap(board)
+    board_serial = board_serial + GetValidMoveMap(board, last_move, ko, liberty_map)
   return board_serial + [last_move] + ko + [result]
 
 # Print out human readable.
