@@ -54,16 +54,15 @@ def flip_horizontal(feature):
 training_set = tf.contrib.learn.datasets.base.load_csv_without_header(
             filename=training_csv, target_dtype=np.float32, features_dtype=np.float32, target_column=-1)
 x_train, y_train = training_set.data, training_set.target
-# Expend to 4 flips.
-x_train_fv = x_train.copy()
-flip_vertical(x_train_fv)
-x_train_fh = x_train.copy()
-flip_horizontal(x_train_fh)
-x_train_fa = x_train_fh.copy()
-flip_vertical(x_train_fa)
-x_train = np.concatenate((x_train, x_train_fv, x_train_fh, x_train_fa), axis=0)
-y_train = np.concatenate(([y_train] * 4), axis=0)
-
-# Train
 logging.getLogger().setLevel(logging.INFO)
+estimator.fit(x=x_train, y=y_train, steps=steps, batch_size=128)
+
+# Expend to 4 flips.
+flip_vertical(x_train)
+estimator.fit(x=x_train, y=y_train, steps=steps, batch_size=128)
+
+flip_horizontal(x_train)
+estimator.fit(x=x_train, y=y_train, steps=steps, batch_size=128)
+
+flip_vertical(x_train)
 estimator.fit(x=x_train, y=y_train, steps=steps, batch_size=128)
