@@ -34,7 +34,7 @@ while True:
   feature = list(map(float, feature))[:-1]  # Remove result column
   board, last_move, ko = play_go.FromFeature(feature)
   next_move = -last_move
-  x_test = np.array([feature], dtype=np.float32)
+  x_test = np.array([play_go.ToFeature(board, last_move, ko, 0, True, True)[:-1]], dtype=np.float32)
   PrintBoard(feature, list(estimator.predict(x_test))[0])
 
   # get all features one step forward

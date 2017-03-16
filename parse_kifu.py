@@ -1,6 +1,6 @@
 # Play Go from Kifu.
 # Sample usages:
-# python parse_kifu.py small/* > small.csv
+# python parse_kifu.py small/* full > small.csv
 
 import glob
 import logging
@@ -33,9 +33,8 @@ def PlayGo(board, move):
 
 # Main code.
 if len(sys.argv) == 1:
-  print('Usage: python parer_kifu.py <file_pattern> [B/W]')
+  print('Usage: python parer_kifu.py <file_pattern> [full_feature]')
   exit(1)
-feature_fn = play_go.ToFeatureWithLiberty  # board+liberty is default now. Use play_go.ToFeature for no liberty.
 
 win_count = defaultdict(lambda: 0)
 for file in glob.glob(sys.argv[1]):
@@ -63,8 +62,11 @@ for file in glob.glob(sys.argv[1]):
       # Assumes that the win rate increases linearly. 0.1 from first move and 1 on 90% move.
       discount = min(1, seq_cnt / (len(sequence) * 1.0) + 0.1)
       # For easier training, encode black stone to positive number and negative for white one.
-      # Also by adding 1, makes the result to float. 0=white win, 1=jigo and 2=black win.      
-      feature = feature_fn(board, ENCODE[move[0]], ko, discount * ENCODE[result])
+      # Also by adding 1, makes the result to float. 0=white win, 1=jigo and 2=black win.
+      if len(sys.argv) > 2:
+        feature = play_go.ToFeature(board, ENCODE[move[0]], ko, discount * ENCODE[result], True, True)
+      else:
+        feature = play_go.ToFeature(board, ENCODE[move[0]], ko, discount * ENCODE[result])
       print(','.join(list(map(str, feature))))
     seq_cnt = seq_cnt + 1
 logging.warning('win_count: %s' % str(win_count))

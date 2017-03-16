@@ -3,7 +3,8 @@
 import copy
 
 def NearPositions(x, y):
-  return ((x-1, y), (x+1, y), (x, y-1), (x, y+1))
+  return [pos for pos in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
+          if pos[0] > 0 and pos[0] < 10 and pos[1] > 0 and pos[1] < 10]
 
 def GetConnented(board, group, x, y):
   group.add((x, y))
@@ -30,6 +31,7 @@ def IsOpponentStone(target, source):
 
 def GetLibertyMap(board):
   liberty_map = [0] * 81
+  group_map = [0] * 81
   idx = 0
   for i in range(1,10):
     for j in range(1,10):
@@ -39,9 +41,10 @@ def GetLibertyMap(board):
         GetConnented(board, group, i, j)
         liberty = GetLiberty(board, group)
         for pos in group:
+          group_map[(pos[0] - 1) * 9 + pos[1] - 1] = len(group)
           liberty_map[(pos[0] - 1) * 9 + pos[1] - 1] = liberty
       idx = idx + 1
-  return liberty_map
+  return liberty_map, group_map
 
 def PlayGo(board, stone, x, y):
   board[x][y] = stone
@@ -71,76 +74,80 @@ def PlayGo(board, stone, x, y):
       return True, [capture_pos[0], capture_pos[1]]
   return True, None
 
+def GetValidMoveMap(board, last_move, ko):
+  ko_tuple = tuple(ko)
+  moves = [0] * 81  
+  next_move = -last_move
+  idx = -1
+  # Try all valid moves
+  for i in range(1,10):
+    for j in range(1,10):
+      idx = idx + 1
+      if not board[i][j] == 0 or (i, j) == ko_tuple:  # don't compare list
+        continue
+      board2 = copy.deepcopy(board)  # make clone for a move
+      valid, ko = PlayGo(board2, next_move, i, j)
+      if not valid:
+        continue
+      moves[idx] = next_move
+  return moves
+
 def FowardFeatures(feature):
+  # TODO: feature and full_feature are confusing. Use status for small feature.
   board, last_move, ko = FromFeature(feature)
+  ko_tuple = tuple(ko)
   next_move = -last_move
   features = []
   # Try all valid moves
   for i in range(1,10):
     for j in range(1,10):
-      if not board[i][j] == 0 or [i, j] == ko:
+      if not board[i][j] == 0 or (i, j) == ko_tuple:
         continue
       board2 = copy.deepcopy(board)  # make clone for a move
       valid, ko = PlayGo(board2, next_move, i, j)
       if not valid:
         continue      
-      features.append(ToFeatureWithLiberty(board2, next_move, ko, 0)[:-1])
+      features.append(ToFeature(board2, next_move, ko, 0, True, True)[:-1])
   return features
 
 def InitBoard():
   board = [x[:] for x in [[0] * 11] * 11]
-  for i in range(11):
-    board[i][0] = 'E'
-    board[0][i] = 'E'
-    board[i][10] = 'E'
-    board[10][i] = 'E'
+  # TODO: merge board and feature
   return board
 
 def FromFeature(feature):
   board = InitBoard()
   last_move = int(feature[-3])
-  ko = feature[-2:]
+  ko = [int(feature[-2]), int(feature[-1])]
   idx = 0
   for i in range(1,10):
     for j in range(1,10):
       if abs(feature[idx]) == 1:
-        # 0.5 and -0.5 indicates ko.
+        # 0.5 and -0.5 indicates ko. TODO: 0.5 is deprecated.
         board[i][j] = feature[idx]
       idx = idx + 1
   return board, last_move, ko
 
-def ToFeature(board, last_move, ko, result):
+def ToFeature(board, last_move, ko, result, add_liberty=False, add_move=False):
   if ko == None:
     ko = [0, 0]
-  else:
-    board[ko[0]][ko[1]] = last_move / 2  # Set 0.5 or -0.5 for ko position.
   board_serial = [item for innerlist in board[1:-1] for item in innerlist[1:-1]]
-  if not ko == None:
-    board[ko[0]][ko[1]] = 0
+  if add_liberty:
+    liberty_map, group_map = GetLibertyMap(board)
+    board_serial = board_serial + liberty_map + group_map
+  if add_move:
+    board_serial = board_serial + GetValidMoveMap(board, last_move, ko)
   return board_serial + [last_move] + ko + [result]
-
-def ToFeatureWithLiberty(board, last_move, ko, result):
-  if ko == None:
-    ko = [0, 0]
-  else:
-    board[ko[0]][ko[1]] = last_move / 2  # Set 0.5 or -0.5 for ko position.
-  board_serial = [item for innerlist in board[1:-1] for item in innerlist[1:-1]]
-  if not ko == None:
-    board[ko[0]][ko[1]] = 0
-  # Output 81*2 +4 for CNN model
-  return board_serial + GetLibertyMap(board) + [last_move] + ko + [result]
-
-def AttachLibertyToFeature(feature):
-  board, last_move, ko = FromFeature(feature)
-  return ToFeatureWithLiberty(board, last_move, ko, 0)
 
 # Print out human readable.
 BOARD_CHAR = { -1: 'O', 1: '@', 0: '.' }
 TURN_MSG = { 1: 'BLACK(@)', -1: 'WHITE(O)', 0: '?' }
-def SPrintBoard(feature):
+def SPrintBoard(feature, detail=False):
   lines = []
   board = feature[:81]
-  liberty = feature[81:81+81]
+  liberty = feature[81:81*2]
+  group = feature[81*2:81*3]
+  valid_move = feature[81*3:81*4]
   last_move = feature[-3]
   ko = feature[-2:]
   pos = 0
@@ -152,7 +159,14 @@ def SPrintBoard(feature):
       else:
         outstr = outstr + BOARD_CHAR[board[pos]]
       pos = pos + 1
-    lines.append('%s  %s' % (outstr, [int(l) for l in liberty[pos-9:pos]]))
+    if detail:
+      # Rich output
+      lines.append('%s  %s %s %s' % (outstr,
+                                     [int(l) for l in liberty[pos-9:pos]],
+                                     [int(l) for l in group[pos-9:pos]],
+                                     [int(l) for l in valid_move[pos-9:pos]]))
+    else:
+      lines.append(outstr)
   lines.append('Last move %s' % TURN_MSG[int(last_move)])
   return '\n'.join(lines)
 
@@ -167,9 +181,9 @@ def main():
       feature = feature.split(',')
     if len(feature) < 84:
       continue
-    feature = list(map(float, feature))[:84]
+    feature = list(map(float, feature))[:-1]
     board, last_move, ko = FromFeature(feature)
-    print(SPrintBoard(feature))
+    print(SPrintBoard(ToFeature(board, last_move, ko, 0, True, True)[:-1], True))
 
 if __name__ == "__main__":
     main()

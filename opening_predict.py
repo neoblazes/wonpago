@@ -22,18 +22,17 @@ print('Test %d sequecne with model %s' % (num_sequence, model_dir))
 
 # Set up kifu
 kifus = []
-board = [0] * 81
+stones = [0] * 81
 for i in range(num_sequence):
-  board[i] = (i % 2) * (-2) + 1
-tail = [(num_sequence % 2) * 2 - 1  # mark last_move
-        , 0, 0]
+  stones[i] = (i % 2) * (-2) + 1
+tail = [(num_sequence % 2) * 2 - 1, 0, 0]
 
 # Shuffle board and add to kifu list
 for _ in range(num_predict):
-  random.shuffle(board)
-  kifus.append(play_go.AttachLibertyToFeature(board + tail)[:-1])  # remove result column
+  random.shuffle(stones)
+  board, last_move, ko = play_go.FromFeature(stones + tail)
+  kifus.append(play_go.ToFeature(board, last_move, ko, 0, True, True)[:-1])  # remove result column
 x_test = np.array(kifus, dtype=np.float32)
-
 
 # Load model and predict
 model_fn = importlib.import_module('%s.model_fn' % model_dir)
