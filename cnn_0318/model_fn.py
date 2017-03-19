@@ -9,7 +9,7 @@ def model_fn(features, targets, mode, params):
   # Features are board[81] + liberty[81] + group[81] + valid_move[81] + last_move[1] + ko[2].
   # Note that turn and ko info are set to valid_move map.
   board_features, _, _ = tf.split(features, [81*4, 1, 2], axis=1)
-  board = tf.reshape(board_features, [-1, 9, 9, 4])
+  board = tf.reshape(board_features, [-1, 4, 9, 9])
   # No relu, input includes negative. 4x25x128 = 12800
   conv_in = tf.layers.conv2d(inputs=board, filters=128, kernel_size=[5, 5],
       padding="same")
