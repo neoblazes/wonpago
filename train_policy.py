@@ -24,8 +24,8 @@ if len(sys.argv) < 4:
 model_dir=sys.argv[1]
 training_csv=sys.argv[2]
 steps=int(sys.argv[3])
-BATCH_SIZE=16
-LEARN_RATE=0.01
+BATCH_SIZE=256
+LEARN_RATE=0.000001
 
 def parse_row(row):
   board_exp = [[0] * 81 for _ in range(3)]

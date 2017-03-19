@@ -76,6 +76,8 @@ for file in glob.glob(sys.argv[1]):
   seq_cnt = 0
   for move in sequence:
     # Print before play.
+    if len(move) == 0:
+      continue
     turn, action = ParseMove(move)
     discount = min(1, seq_cnt / (len(sequence) * 1.0))
     feature = play_go.ToFeature(board, ko, turn, action, winner, RICH_OUTPUT, RICH_OUTPUT)

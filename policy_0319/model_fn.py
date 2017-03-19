@@ -10,7 +10,7 @@ def model_fn(features, targets, mode, params):
   # Note that turn and ko info are set to valid_move map.
   board = tf.reshape(features, [-1, 9, 9, 9])
   # No relu, input includes negative. 9x25x128 = 28800
-  conv_in = tf.layers.conv2d(inputs=board, filters=12, kernel_size=[5, 5],
+  conv_in = tf.layers.conv2d(inputs=board, filters=128, kernel_size=[5, 5],
       padding="same")
   conv1 = tf.layers.conv2d(inputs=conv_in, filters=64, kernel_size=[3, 3],
       padding="same") # 128*9*64 = 73728
@@ -20,7 +20,7 @@ def model_fn(features, targets, mode, params):
       padding="same") # 64*9*64 = 36864
   conv4 = tf.layers.conv2d(inputs=conv3, filters=64, kernel_size=[3, 3],
       padding="same") # 64*9*64 = 36864
-  conv_out = tf.layers.conv2d(inputs=conv_in, filters=1, kernel_size=[1, 1],
+  conv_out = tf.layers.conv2d(inputs=conv4, filters=1, kernel_size=[1, 1],
       padding="same") # To reduce size
   # Flattens conv2d output and attaches last_move info.
   conv_flat = tf.reshape(conv_out, [-1, 9 * 9 * 1])

@@ -20,6 +20,8 @@ model_dir=sys.argv[1]
 training_csv=sys.argv[2]
 steps=int(sys.argv[3])
 
+BATCH_SIZE=256
+
 # Load network model.
 print('Working on directory: ', model_dir)
 logging.getLogger().setLevel(logging.INFO)
@@ -52,17 +54,18 @@ def flip_horizontal(feature):
 
 # Read data set
 training_set = tf.contrib.learn.datasets.base.load_csv_without_header(
-            filename=training_csv, target_dtype=np.float32, features_dtype=np.float32, target_column=-1)
+    filename=training_csv, target_dtype=np.float32,
+    features_dtype=np.float32, target_column=-1)
 x_train, y_train = training_set.data, training_set.target
 logging.getLogger().setLevel(logging.INFO)
-estimator.fit(x=x_train, y=y_train, steps=steps, batch_size=128)
+estimator.fit(x=x_train, y=y_train, steps=steps, batch_size=BATCH_SIZE)
 
 # Expend to 4 flips.
 flip_vertical(x_train)
-estimator.fit(x=x_train, y=y_train, steps=steps, batch_size=128)
+estimator.fit(x=x_train, y=y_train, steps=steps, batch_size=BATCH_SIZE)
 
 flip_horizontal(x_train)
-estimator.fit(x=x_train, y=y_train, steps=steps, batch_size=128)
+estimator.fit(x=x_train, y=y_train, steps=steps, batch_size=BATCH_SIZE)
 
 flip_vertical(x_train)
-estimator.fit(x=x_train, y=y_train, steps=steps, batch_size=128)
+estimator.fit(x=x_train, y=y_train, steps=steps, batch_size=BATCH_SIZE)
