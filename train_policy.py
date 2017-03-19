@@ -1,9 +1,9 @@
-# Training Estimator from Kifu.
+# Training policy network from Kifu.
 # It saaumes that test.csv file is alreay esixting.
 # NOTE that it imports model_fn.py from model directory.
 #
-# Usage: python train_kifu.py <dir> [steps]
-# Sample usage: python train_kifu.py dnnregressor test.csv 2000
+# Usage: python train_policy.py <dir> <training_csv> <steps>
+# Sample usage: python train_policy.py policy_0319 large.csv 100000
 
 import numpy as np
 import tensorflow as tf

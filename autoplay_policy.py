@@ -13,9 +13,12 @@ import sys
 import play_go
 
 if len(sys.argv) < 2:
-  print('Usage: python autoplay_policy.py <model_dir>')
+  print('Usage: python autoplay_policy.py <model_dir> [epsilon]')
   exit(1)
 model_dir = sys.argv[1]
+epsilon = 0.0
+if len(sys.argv) == 3:
+  epsilon = float(sys.argv[2])
 
 # Extract to lib.
 def parse_row(row):
@@ -61,21 +64,21 @@ while True:
   for i in range(len(probabilities)):
     actions.append([i, probabilities[i]])
   for a in sorted(actions, key = lambda x:x[1], reverse = True):
+    if random.random() < epsilon:
+      continue
     action = a[0]
     if action == 82:
-      print('Surrender')
-      exit(1)
+      print('Surrender signal, but will continue for test')
+      continue
     if action == 0:
       if passed:
         print('Both passed')
         exit(1)
       print('Passed')
       passed = True
-      turn = play_go.FlipTurn(turn)
       break
-      print(play_go.UnpackAction(action))
     valid, ko = play_go.PlayGo(board, turn, play_go.UnpackAction(action))
     if valid:
       passed = False
-      turn = play_go.FlipTurn(turn)
       break
+  turn = play_go.FlipTurn(turn)
