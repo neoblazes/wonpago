@@ -115,6 +115,7 @@ def PlayGo(board, turn, action):
   group = set()
   GetConnented(board, group, x, y)
   if GetLiberty(board, group) == 0:
+    board[x][y] = 0
     return False, 0
 
   # Check Ko
@@ -128,7 +129,7 @@ def PlayGoXy(board, stone, x, y):
 
 def GetValidMoveMap(board, ko, turn, liberty_map):
   ko_tuple = tuple(DecodePos(ko))
-  moves = [0] * 81  
+  moves = [0] * 81
   idx = -1
   # Try all valid moves
   for i in range(1,10):
