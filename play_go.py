@@ -56,7 +56,7 @@ def CaptureGroup(board, group):
     board[pos[0]][pos[1]] = 0
 
 def IsOpponentStone(target, source):
-  return target in (1,-1) and target != source
+  return target in (BLACK, WHITE) and target != source
 
 def GetLibertyMap(board):
   liberty_map = [0] * 81
@@ -146,7 +146,7 @@ def GetValidMoveMap(board, ko, turn, liberty_map):
           need_play = False
       if need_play:
         board2 = copy.deepcopy(board)  # make clone for a move
-        valid, ko = PlayGoXy(board2, turn, i, j)        
+        valid, ko = PlayGoXy(board2, turn, i, j)
         if not valid:
           if not need_play:
             logging.critical('Bug on liberty check, (%d, %d)', i , j)
@@ -168,7 +168,7 @@ def FowardFeatures(feature):
       board2 = copy.deepcopy(board)  # make clone for a move
       valid, ko = PlayGo(board2, next_move, i, j)
       if not valid:
-        continue      
+        continue
       features.append(ToFeature(board2, next_move, ko, 0, True, True)[:-1])
   return features
 
