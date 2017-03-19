@@ -1,6 +1,7 @@
 # Play Go from Kifu.
 # Sample usages:
-# python parse_kifu.py small/* full > small.csv
+# python parse_kifu.py small/* > small.csv
+# python parse_kifu.py small/* simple > small_simple.csv
 
 import glob
 import logging
@@ -10,16 +11,26 @@ from collections import defaultdict
 
 import play_go
 
-SKIP_SEQUENCE = 5  # Skips too early stages
+SKIP_SEQUENCE = -1  # Skips too early stages
+RICH_OUTPUT = len(sys.argv) == 2
+
 
 def GetWinner(summary, sequence):
   if summary.find('RE[B') > 0:
-    return 'B'
+    return 0
   elif summary.find('RE[W') > 0:
-    return 'W'
+    return 2
   elif len(sequence) > 1 and sequence[-1][-2:] != '[]':
-    return sequence[-1][0]
-  return 'J'
+    if sequence[-1][0] == 'B':
+      return 0
+    else:
+      return 2
+  return 1
+
+def WinBySurrender(winner, summary):
+  if winner == 1:
+    return False
+  return not summary.find('RE[') > 0
 
 ENCODE = {'B': 1, 'W': -1, ' ': 0, 'J': 0}
 def PlayGo(board, move):
@@ -29,7 +40,17 @@ def PlayGo(board, move):
   stone = move[0]
   x = ord(move[2]) - ord('a') + 1
   y = ord(move[3]) - ord('a') + 1
-  return play_go.PlayGo(board, ENCODE[stone], x, y)
+  return play_go.PlayGoXy(board, ENCODE[stone], x, y)
+
+def ParseMove(move):
+  turn = 1
+  if move[0] == 'W':
+    turn = 2
+  if len(move) < 5:
+    return turn, play_go.PASS  # passed
+  x = ord(move[2]) - ord('a') + 1
+  y = ord(move[3]) - ord('a') + 1
+  return turn, play_go.EncodePos(x, y)
 
 # Main code.
 if len(sys.argv) == 1:
@@ -47,26 +68,27 @@ for file in glob.glob(sys.argv[1]):
     logging.warning('Drops too short game')
     continue
 
-  result = GetWinner(summary, sequence)
-  #black_territory = GetBlackTerritory(summary, sequence)
-  #if black_territory == None:
-    # Skipps surrender games.
-  #  continue
-  win_count[result] = win_count[result] + 1
+  winner = GetWinner(summary, sequence)
+  surrendered = WinBySurrender(winner, summary)
+  win_count[winner] = win_count[winner] + 1
   
-  board = play_go.InitBoard()
+  board, ko, turn = play_go.InitBoard()
   seq_cnt = 0
   for move in sequence:
-    valid, ko = PlayGo(board, move)
-    if seq_cnt > SKIP_SEQUENCE and valid:
-      # Assumes that the win rate increases linearly. 0.1 from first move and 1 on 90% move.
-      discount = min(1, seq_cnt / (len(sequence) * 1.0) + 0.1)
-      # For easier training, encode black stone to positive number and negative for white one.
-      # Also by adding 1, makes the result to float. 0=white win, 1=jigo and 2=black win.
-      if len(sys.argv) > 2:
-        feature = play_go.ToFeature(board, ENCODE[move[0]], ko, discount * ENCODE[result])
-      else:
-        feature = play_go.ToFeature(board, ENCODE[move[0]], ko, discount * ENCODE[result], True, True)
-      print(','.join(list(map(str, feature))))
+    # Print before play.
+    turn, action = ParseMove(move)
+    discount = min(1, seq_cnt / (len(sequence) * 1.0))
+    feature = play_go.ToFeature(board, ko, turn, action, winner, RICH_OUTPUT, RICH_OUTPUT)
+    print(','.join(list(map(str, feature))))
+    
+    valid, ko = play_go.PlayGo(board, turn, action)
+    # TODO(neochio): fix encode.
+    #if ko == None:
+    #  ko = 0
+    #else:
+    #  ko = ko[0] * 9 + ko[1] - 9
     seq_cnt = seq_cnt + 1
+  if surrendered:
+    feature = play_go.ToFeature(board, ko, play_go.FlipTurn(turn), play_go.SURRENDER, winner, RICH_OUTPUT, RICH_OUTPUT)
+    print(','.join(list(map(str, feature))))
 logging.warning('win_count: %s' % str(win_count))
