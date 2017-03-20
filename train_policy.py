@@ -8,6 +8,7 @@
 import numpy as np
 import tensorflow as tf
 
+import argparse
 import csv
 import importlib
 import logging
@@ -17,15 +18,18 @@ from tensorflow.python.platform import gfile
 
 import play_go
 
-if len(sys.argv) < 4:
-  print('Usage: python train_policy.py <dir> <training_csv> <steps>')
-  exit(1)
-
-model_dir=sys.argv[1]
-training_csv=sys.argv[2]
-steps=int(sys.argv[3])
-BATCH_SIZE=256
-LEARN_RATE=0.000001
+parser = argparse.ArgumentParser()
+parser.add_argument("model_dir")
+parser.add_argument("training_csv")
+parser.add_argument("steps", type=int)
+parser.add_argument("--batch", default=256, type=int)
+parser.add_argument("--lr", default=0.000001, type=float)
+args = parser.parse_args()
+model_dir=args.model_dir
+training_csv=args.training_csv
+steps=args.steps
+BATCH_SIZE=args.batch
+LEARN_RATE=args.lr
 
 def parse_row(row):
   board_exp = [[0] * 81 for _ in range(3)]
