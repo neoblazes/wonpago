@@ -148,5 +148,5 @@ Fit()
 flip_horizontal(feature, target)
 Fit()
 
-flip_vertical(x_train, target)
+flip_vertical(feature, target)
 Fit()
