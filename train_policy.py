@@ -23,7 +23,7 @@ parser.add_argument("model_dir")
 parser.add_argument("training_csv")
 parser.add_argument("steps", type=int)
 parser.add_argument("--batch", default=256, type=int)
-parser.add_argument("--lr", default=0.000001, type=float)
+parser.add_argument("--lr", default=0.0001, type=float)
 args = parser.parse_args()
 model_dir=args.model_dir
 training_csv=args.training_csv
