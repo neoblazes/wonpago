@@ -37,9 +37,9 @@ def NearPositions(x, y):
 
 def GetConnented(board, group, x, y):
   group.add((x, y))
-  stone = board[x][y]
+  stone = board[y][x]
   for pos in NearPositions(x, y):
-    if board[pos[0]][pos[1]] == stone and not (pos[0], pos[1]) in group:
+    if board[pos[1]][pos[0]] == stone and not (pos[0], pos[1]) in group:
       GetConnented(board, group, pos[0], pos[1])
 
 def GetLiberty(board, group):
@@ -47,13 +47,13 @@ def GetLiberty(board, group):
   # It should check dup of liberty. Just ok to check 0 or Ko.
   for pos in group:
     for n_pos in NearPositions(pos[0], pos[1]):
-      if board[n_pos[0]][n_pos[1]] == 0:
+      if board[n_pos[1]][n_pos[0]] == 0:
         liberty.add((n_pos[0], n_pos[1]))
   return len(liberty)
 
 def CaptureGroup(board, group):
   for pos in group:
-    board[pos[0]][pos[1]] = 0
+    board[pos[1]][pos[0]] = 0
 
 def IsOpponentStone(target, source):
   return target in (BLACK, WHITE) and target != source
@@ -67,11 +67,11 @@ def GetLibertyMap(board):
       # Assumes that there is no liberty == 0 stone.
       if (board[i][j] == BLACK or board[i][j] == WHITE) and liberty_map[idx] == 0:
         group = set()
-        GetConnented(board, group, i, j)
+        GetConnented(board, group, j, i)
         liberty = GetLiberty(board, group)
         for pos in group:
-          group_map[(pos[0] - 1) * 9 + pos[1] - 1] = len(group)
-          liberty_map[(pos[0] - 1) * 9 + pos[1] - 1] = liberty
+          group_map[(pos[1] - 1) * 9 + pos[0] - 1] = len(group)
+          liberty_map[(pos[1] - 1) * 9 + pos[0] - 1] = liberty
       idx = idx + 1
   return liberty_map, group_map
 
@@ -104,7 +104,7 @@ def PlayGo(board, turn, action):
   for pos in NearPositions(x, y):
     if IsOpponentStone(board[pos[1]][pos[0]], turn):
       group = set()
-      GetConnented(board, group, pos[1], pos[0])
+      GetConnented(board, group, pos[0], pos[1])
       liberty = GetLiberty(board, group)
       if liberty == 0:
         CaptureGroup(board, group)
@@ -132,24 +132,24 @@ def GetValidMoveMap(board, ko, turn, liberty_map):
   moves = [0] * 81
   idx = -1
   # Try all valid moves
-  for i in range(1,10):
-    for j in range(1,10):
+  for y in range(1,10):
+    for x in range(1,10):
       idx = idx + 1
-      if not board[i][j] == 0 or (i, j) == ko_tuple:  # don't compare list
+      if not board[y][x] == 0 or (x, y) == ko_tuple:  # don't compare list
         continue
       need_play = True
       # Checks self liberty.
-      for pos in NearPositions(i, j):
-        if (board[pos[0]][pos[1]] == 0 or
-            (board[pos[0]][pos[1]] == turn and
-             liberty_map[(pos[0]-1)*9+pos[1]-1] > 1)):
+      for pos in NearPositions(x, y):
+        if (board[pos[1]][pos[0]] == 0 or
+            (board[pos[1]][pos[0]] == turn and
+             liberty_map[(pos[1]-1)*9+pos[0]-1] > 1)):
           need_play = False
       if need_play:
         board2 = copy.deepcopy(board)  # make clone for a move
-        valid, ko = PlayGoXy(board2, turn, i, j)
+        valid, ko = PlayGoXy(board2, turn, x, y)
         if not valid:
           if not need_play:
-            logging.critical('Bug on liberty check, (%d, %d)', i , j)
+            logging.critical('Bug on liberty check, (%d, %d)', y , x)
           continue
       moves[idx] = turn
   return moves
@@ -215,7 +215,7 @@ def SPrintBoard(feature, detail=False):
   for row in range(1, 10):
     outstr = ''
     for col in range(1, 10):
-      if row == ko[0] and col == ko[1]:
+      if row == ko[1] and col == ko[0]:
         outstr = outstr + '*'
       else:
         outstr = outstr + BOARD_CHAR[board[pos]]
