@@ -94,17 +94,17 @@ def PlayGo(board, turn, action):
   if action % 10 == 0:  # mod 0 is used for special actions
     return True, 0
   x, y = DecodePos(action)
-  if board[x][y] != 0:
+  if board[y][x] != 0:
     return False, 0
-  board[x][y] = turn
+  board[y][x] = turn
 
   # Capture stones
   capture_count = 0
   capture_pos = None
   for pos in NearPositions(x, y):
-    if IsOpponentStone(board[pos[0]][pos[1]], turn):
+    if IsOpponentStone(board[pos[1]][pos[0]], turn):
       group = set()
-      GetConnented(board, group, pos[0], pos[1])
+      GetConnented(board, group, pos[1], pos[0])
       liberty = GetLiberty(board, group)
       if liberty == 0:
         CaptureGroup(board, group)
@@ -115,7 +115,7 @@ def PlayGo(board, turn, action):
   group = set()
   GetConnented(board, group, x, y)
   if GetLiberty(board, group) == 0:
-    board[x][y] = 0
+    board[y][x] = 0
     return False, 0
 
   # Check Ko

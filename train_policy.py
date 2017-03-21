@@ -86,6 +86,7 @@ def flip_vertical(x_train, target):
   for feature in x_train:
     feature = feature.reshape((9, 9, 9))[:,::-1,:].reshape((9 * 9 * 9))
   for i in range(len(target)):
+    print(target[i])
     if target[i] < 11:
       continue
     y = int((target[i]) / 10)
@@ -97,32 +98,61 @@ def flip_horizontal(x_train, target):
   for feature in x_train:
     feature = feature.reshape((9, 9, 9))[:,:,::-1].reshape((9 * 9 * 9))
   for i in range(len(target)):
+    print(target[i])
     if target[i] == 0 or target[i] == 82:
       continue
     y = int((target[i]) / 10)
     x = target[i] % 10
-    x = 10 - x
+    x = (10 - x)
     target[i] = y * 10 + x
 
-# Read data set
-print('Loading training data')
-x_train, target = load_dataset(training_csv)
+def rot90(x_train, target):
+  for feature in x_train:
+    # rotate 90 and flip vertical
+    feature = np.rot90(feature.reshape((9, 9, 9)), 1, axes=(2,1)).reshape((9 * 9 * 9))
+  for i in range(len(target)):
+    if target[i] == 0 or target[i] == 82:
+      continue
+    y = int((target[i]) / 10)
+    x = target[i] % 10    
+    target[i] = x * 10 + (10 - y)  # (x, y) -> (10 - y, x)
 
 # Load network model.
+x_train, target = ([], [])
 print('Working on directory: ', model_dir)
 logging.getLogger().setLevel(logging.INFO)
 model_fn = importlib.import_module('%s.model_fn' % model_dir)
 config = tf.contrib.learn.RunConfig()
 config.tf_config.gpu_options.allow_growth=True
 estimator = model_fn.GetEstimator(model_dir, config, {"learning_rate": LEARN_RATE})
-estimator.fit(x=x_train, y=target_nparray(target), steps=steps, batch_size=BATCH_SIZE)
+def Fit():
+  estimator.fit(x=x_train, y=target_nparray(target), steps=steps, batch_size=BATCH_SIZE)
+
+# Read data set.
+print('Loading training data')
+x_train, target = load_dataset(training_csv)
+Fit()
 
 # Expend to 4 flips.
 flip_vertical(x_train, target)
-estimator.fit(x=x_train, y=target_nparray(target), steps=steps, batch_size=BATCH_SIZE)
+Fit()
 
 flip_horizontal(x_train, target)
-estimator.fit(x=x_train, y=target_nparray(target), steps=steps, batch_size=BATCH_SIZE)
+Fit()
 
 flip_vertical(x_train, target)
-estimator.fit(x=x_train, y=target_nparray(target), steps=steps, batch_size=BATCH_SIZE)
+Fit()
+
+# Rotate 90.
+rot90(x_train, target)
+Fit()
+
+# Expend to 4 flips with rotated.
+flip_vertical(x_train, target)
+Fit()
+
+flip_horizontal(x_train, target)
+Fit()
+
+flip_vertical(x_train, target)
+Fit()
