@@ -86,7 +86,6 @@ def flip_vertical(x_train, target):
   for feature in x_train:
     feature = feature.reshape((9, 9, 9))[:,::-1,:].reshape((9 * 9 * 9))
   for i in range(len(target)):
-    print(target[i])
     if target[i] < 11:
       continue
     y = int((target[i]) / 10)
@@ -98,7 +97,6 @@ def flip_horizontal(x_train, target):
   for feature in x_train:
     feature = feature.reshape((9, 9, 9))[:,:,::-1].reshape((9 * 9 * 9))
   for i in range(len(target)):
-    print(target[i])
     if target[i] == 0 or target[i] == 82:
       continue
     y = int((target[i]) / 10)
