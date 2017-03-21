@@ -2,7 +2,12 @@
 
 import numpy as np
 import sys
-import play_go
+
+def PackAction(pos): # 11~99 to 1~81
+  return (int(pos / 10) - 1) * 9 + (pos % 10)
+
+def UnpackAction(pos): # 1~81 to 11~99
+  return (int((pos - 1) / 9) + 1) * 10 + ((pos - 1) % 9) + 1
 
 def get_dominions(black_stones, white_stones, black_base, white_base):
   black_padded = np.pad(black_base, 1, 'constant', constant_values=0)
@@ -71,7 +76,7 @@ def target_nparray(target):
     elif t == 1:
       npa[82] = 1
     else:
-      npa[play_go.PackAction(t)] = 1  # Convert 11~99 to 1~81
+      npa[PackAction(t)] = 1  # Convert 11~99 to 1~81
     npas.append(np.asarray(npa, dtype=np.float32))
   return np.array(npas) 
 

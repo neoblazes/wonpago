@@ -6,10 +6,7 @@
 # Sample usage: python train_kifu.py dnnregressor test.csv 2000
 
 import numpy as np
-import tensorflow as tf
 
-import importlib
-import logging
 import sys
 
 if len(sys.argv) < 4:

@@ -49,7 +49,7 @@ while True:
       print('Passed')
       passed = True
       break
-    valid, ko = play_go.PlayGo(board, turn, play_go.UnpackAction(action))
+    valid, ko = play_go.PlayGo(board, turn, train_lib.UnpackAction(action))
     if valid:
       passed = False
       break

@@ -81,12 +81,6 @@ def EncodePos(x, y):
 def DecodePos(pos):
   return [pos % 10, int(pos / 10)]
 
-def PackAction(pos): # 11~99 to 1~81
-  return (int(pos / 10) - 1) * 9 + (pos % 10)
-
-def UnpackAction(pos): # 1~81 to 11~99
-  return (int((pos - 1) / 9) + 1) * 10 + ((pos - 1) % 9) + 1
-
 def FlipTurn(turn):
   return 3 - turn
 

@@ -42,7 +42,10 @@ def load_dataset(filename):
     data_file = csv.reader(csv_file)
     data, target = [], []
     for row in data_file:
-      x, y = train_lib.parse_row(row, produce_dominion)
+      if len(row) >= 81 * 13:
+        x, y = row[:81 * 13], int(row[-1])
+      else:
+        x, y = train_lib.parse_row(row, produce_dominion)
       data.append(np.asarray(x, dtype=np.float32))
       target.append(y)
     return data, target
