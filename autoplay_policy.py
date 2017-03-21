@@ -1,7 +1,6 @@
-# Print out DNN classifier predict for some random openings.
+# Auto play with a model.
 #
-# Usage: python opening_predict.py <model_dir> <num_sequence> <num_predict>
-# Sample usage: python opening_predict.py tr0310 4 10
+# Sample usage: python autoplay_policy.py policy_0322_f13 0.3
 
 import numpy as np
 import tensorflow as tf
