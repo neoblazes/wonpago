@@ -60,7 +60,6 @@ config.tf_config.gpu_options.allow_growth=True
 estimator = model_fn.GetEstimator(model_dir, config, {"learning_rate": LEARN_RATE})
 def Fit():
   estimator.fit(x=np.array(feature), y=train_lib.target_nparray(target), steps=steps, batch_size=BATCH_SIZE)
-  pass
 
 # Read data set.
 print('Loading training data')

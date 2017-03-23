@@ -59,7 +59,7 @@ def parse_row(row, produce_dominion=False):
 
     # Secondary dominion
     black_dominion, white_dominion = get_dominions(
-    black_stones, white_stones, black_dominion, white_dominion)
+      black_stones, white_stones, black_dominion, white_dominion)
     x_out += black_dominion.reshape((9*9)).tolist()
     x_out += white_dominion.reshape((9*9)).tolist()
   
