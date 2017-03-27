@@ -41,7 +41,7 @@ def get_forwards(feature_csvs):
   x_tests = []
   for feature_csv in feature_csvs:
     feature = [ int(x) for x in feature_csv.split(',') ]
-    board, ko, turn = play_go.FromFeature(feature + [0, 0])
+    board, ko, turn = play_go.FromFeature(feature + [0])
     feature = play_go.ToFeature(board, ko, turn, 0, 0, True, True)
     x_test, _ = train_lib.parse_row(feature, True)
     x_tests.append(np.asarray(x_test, dtype=np.float32))

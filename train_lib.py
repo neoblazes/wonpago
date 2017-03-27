@@ -40,14 +40,15 @@ def parse_row(row, produce_dominion=False):
       group_size[stone - 1][i] = row[group_idx + i]
   for i in range(81):
     valid_move = int(row[valid_idx + i])
-    valid_move_exp[valid_move - 1][i] = 1
-  
+    if valid_move > 0:
+      valid_move_exp[valid_move - 1][i] = 1
+
   x_out = []
   for l in [board_exp[0], board_exp[1], board_exp[2], liberty_map[0], liberty_map[1],
             group_size[0], group_size[1], valid_move_exp[0] + valid_move_exp[1]]: # 3 + 2 + 2 + 2 (9 layers)
     x_out += l
 
-  if produce_dominion:    
+  if produce_dominion:
     # Build dominion map and add 4 layers (2*2), 13 layers in total.
     # Adding direct dominion
     black_stones = np.array(board_exp[1]).reshape((9, 9))
@@ -62,7 +63,7 @@ def parse_row(row, produce_dominion=False):
       black_stones, white_stones, black_dominion, white_dominion)
     x_out += black_dominion.reshape((9*9)).tolist()
     x_out += white_dominion.reshape((9*9)).tolist()
-  
+
   # Parse target (move)
   y_num = int(row[-2])
   return x_out, y_num
@@ -78,7 +79,7 @@ def target_nparray(target):
     else:
       npa[PackAction(t)] = 1  # Convert 11~99 to 1~81
     npas.append(np.asarray(npa, dtype=np.float32))
-  return np.array(npas) 
+  return np.array(npas)
 
 # Flip functions.
 def flip_vertical(feature, target):
@@ -107,5 +108,5 @@ def rot90(feature, target):
     if target[i] == 0 or target[i] == 82:
       continue
     y = int((target[i]) / 10)
-    x = target[i] % 10    
+    x = target[i] % 10
     target[i] = x * 10 + (10 - y)  # (x, y) -> (10 - y, x)
