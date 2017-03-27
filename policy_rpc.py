@@ -54,7 +54,7 @@ def get_forwards(feature_csvs):
     return rets[0]
   return rets
 
-server = SimpleXMLRPCServer(("localhost", 11001))
+server = SimpleXMLRPCServer(("", 11001))
 print "Listening on port 11001..."
 print "Supporting get_forwards() with both of single feature csv or list of csv string."
 server.register_function(get_forwards, "get_forwards")
