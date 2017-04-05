@@ -246,7 +246,7 @@ node {
             size: 4
           }
         }
-        tensor_content: "\377\377\377\377\t\000\000\000\t\000\000\000\r\000\000\000"
+        tensor_content: "\377\377\377\377\r\000\000\000\t\000\000\000\t\000\000\000"
       }
     }
   }
@@ -264,6 +264,81 @@ node {
   }
   attr {
     key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 13
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 9
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "transpose/perm"
+  op: "Const"
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 4
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        tensor_content: "\000\000\000\000\002\000\000\000\003\000\000\000\001\000\000\000"
+      }
+    }
+  }
+}
+node {
+  name: "transpose"
+  op: "Transpose"
+  input: "Reshape"
+  input: "transpose/perm"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tperm"
     value {
       type: DT_INT32
     }
@@ -988,7 +1063,7 @@ node {
 node {
   name: "conv2d/convolution"
   op: "Conv2D"
-  input: "Reshape"
+  input: "transpose"
   input: "conv2d/kernel/read"
   attr {
     key: "T"
@@ -1816,7 +1891,7 @@ node {
 node {
   name: "conv2d_2/convolution"
   op: "Conv2D"
-  input: "Reshape"
+  input: "transpose"
   input: "conv2d_1/kernel/read"
   attr {
     key: "T"
@@ -13763,7 +13838,299 @@ node {
   }
 }
 node {
+  name: "Slice/begin"
+  op: "Const"
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 4
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        tensor_content: "\377\377\377\377\000\000\000\000\000\000\000\000\007\000\000\000"
+      }
+    }
+  }
+}
+node {
+  name: "Slice/size"
+  op: "Const"
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 4
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        tensor_content: "\377\377\377\377\t\000\000\000\t\000\000\000\t\000\000\000"
+      }
+    }
+  }
+}
+node {
+  name: "Slice"
+  op: "Slice"
+  input: "transpose"
+  input: "Slice/begin"
+  input: "Slice/size"
+  attr {
+    key: "Index"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 9
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "Max/reduction_indices"
+  op: "Const"
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+        }
+        int_val: 3
+      }
+    }
+  }
+}
+node {
+  name: "Max"
+  op: "Max"
+  input: "Slice"
+  input: "Max/reduction_indices"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tidx"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 9
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "keep_dims"
+    value {
+      b: false
+    }
+  }
+}
+node {
   name: "Reshape_1/shape"
+  op: "Const"
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 4
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        tensor_content: "\377\377\377\377\t\000\000\000\t\000\000\000\001\000\000\000"
+      }
+    }
+  }
+}
+node {
+  name: "Reshape_1"
+  op: "Reshape"
+  input: "Max"
+  input: "Reshape_1/shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 1
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "Mul"
+  op: "Mul"
+  input: "conv2d_16/BiasAdd"
+  input: "Reshape_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 2
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "Reshape_2/shape"
   op: "Const"
   attr {
     key: "_output_shapes"
@@ -13799,10 +14166,10 @@ node {
   }
 }
 node {
-  name: "Reshape_1"
+  name: "Reshape_2"
   op: "Reshape"
-  input: "conv2d_16/BiasAdd"
-  input: "Reshape_1/shape"
+  input: "Mul"
+  input: "Reshape_2/shape"
   attr {
     key: "T"
     value {
@@ -14415,7 +14782,7 @@ node {
 node {
   name: "dense/MatMul"
   op: "MatMul"
-  input: "Reshape_1"
+  input: "Reshape_2"
   input: "dense/kernel/read"
   attr {
     key: "T"
@@ -14553,7 +14920,7 @@ node {
 node {
   name: "split"
   op: "SplitV"
-  input: "Reshape_1"
+  input: "Reshape_2"
   input: "Const"
   input: "split/split_dim"
   attr {
@@ -21855,7 +22222,7 @@ node {
 node {
   name: "OptimizeLoss/gradients/dense/MatMul_grad/MatMul_1"
   op: "MatMul"
-  input: "Reshape_1"
+  input: "Reshape_2"
   input: "OptimizeLoss/gradients/dense/BiasAdd_grad/tuple/control_dependency"
   attr {
     key: "T"
@@ -22009,9 +22376,9 @@ node {
   }
 }
 node {
-  name: "OptimizeLoss/gradients/Reshape_1_grad/Shape"
+  name: "OptimizeLoss/gradients/Reshape_2_grad/Shape"
   op: "Shape"
-  input: "conv2d_16/BiasAdd"
+  input: "Mul"
   attr {
     key: "T"
     value {
@@ -22038,10 +22405,10 @@ node {
   }
 }
 node {
-  name: "OptimizeLoss/gradients/Reshape_1_grad/Reshape"
+  name: "OptimizeLoss/gradients/Reshape_2_grad/Reshape"
   op: "Reshape"
   input: "OptimizeLoss/gradients/AddN"
-  input: "OptimizeLoss/gradients/Reshape_1_grad/Shape"
+  input: "OptimizeLoss/gradients/Reshape_2_grad/Shape"
   attr {
     key: "T"
     value {
@@ -22077,9 +22444,396 @@ node {
   }
 }
 node {
+  name: "OptimizeLoss/gradients/Mul_grad/Shape"
+  op: "Shape"
+  input: "conv2d_16/BiasAdd"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 4
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "out_type"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "OptimizeLoss/gradients/Mul_grad/Shape_1"
+  op: "Shape"
+  input: "Reshape_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 4
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "out_type"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "OptimizeLoss/gradients/Mul_grad/BroadcastGradientArgs"
+  op: "BroadcastGradientArgs"
+  input: "OptimizeLoss/gradients/Mul_grad/Shape"
+  input: "OptimizeLoss/gradients/Mul_grad/Shape_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+        }
+        shape {
+          dim {
+            size: -1
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "OptimizeLoss/gradients/Mul_grad/mul"
+  op: "Mul"
+  input: "OptimizeLoss/gradients/Reshape_2_grad/Reshape"
+  input: "Reshape_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 2
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "OptimizeLoss/gradients/Mul_grad/Sum"
+  op: "Sum"
+  input: "OptimizeLoss/gradients/Mul_grad/mul"
+  input: "OptimizeLoss/gradients/Mul_grad/BroadcastGradientArgs"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tidx"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          unknown_rank: true
+        }
+      }
+    }
+  }
+  attr {
+    key: "keep_dims"
+    value {
+      b: false
+    }
+  }
+}
+node {
+  name: "OptimizeLoss/gradients/Mul_grad/Reshape"
+  op: "Reshape"
+  input: "OptimizeLoss/gradients/Mul_grad/Sum"
+  input: "OptimizeLoss/gradients/Mul_grad/Shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 2
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "OptimizeLoss/gradients/Mul_grad/mul_1"
+  op: "Mul"
+  input: "conv2d_16/BiasAdd"
+  input: "OptimizeLoss/gradients/Reshape_2_grad/Reshape"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 2
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "OptimizeLoss/gradients/Mul_grad/Sum_1"
+  op: "Sum"
+  input: "OptimizeLoss/gradients/Mul_grad/mul_1"
+  input: "OptimizeLoss/gradients/Mul_grad/BroadcastGradientArgs:1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tidx"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          unknown_rank: true
+        }
+      }
+    }
+  }
+  attr {
+    key: "keep_dims"
+    value {
+      b: false
+    }
+  }
+}
+node {
+  name: "OptimizeLoss/gradients/Mul_grad/Reshape_1"
+  op: "Reshape"
+  input: "OptimizeLoss/gradients/Mul_grad/Sum_1"
+  input: "OptimizeLoss/gradients/Mul_grad/Shape_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 1
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "OptimizeLoss/gradients/Mul_grad/tuple/group_deps"
+  op: "NoOp"
+  input: "^OptimizeLoss/gradients/Mul_grad/Reshape"
+  input: "^OptimizeLoss/gradients/Mul_grad/Reshape_1"
+}
+node {
+  name: "OptimizeLoss/gradients/Mul_grad/tuple/control_dependency"
+  op: "Identity"
+  input: "OptimizeLoss/gradients/Mul_grad/Reshape"
+  input: "^OptimizeLoss/gradients/Mul_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@OptimizeLoss/gradients/Mul_grad/Reshape"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 2
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "OptimizeLoss/gradients/Mul_grad/tuple/control_dependency_1"
+  op: "Identity"
+  input: "OptimizeLoss/gradients/Mul_grad/Reshape_1"
+  input: "^OptimizeLoss/gradients/Mul_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@OptimizeLoss/gradients/Mul_grad/Reshape_1"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 9
+          }
+          dim {
+            size: 1
+          }
+        }
+      }
+    }
+  }
+}
+node {
   name: "OptimizeLoss/gradients/conv2d_16/BiasAdd_grad/BiasAddGrad"
   op: "BiasAddGrad"
-  input: "OptimizeLoss/gradients/Reshape_1_grad/Reshape"
+  input: "OptimizeLoss/gradients/Mul_grad/tuple/control_dependency"
   attr {
     key: "T"
     value {
@@ -22108,13 +22862,13 @@ node {
 node {
   name: "OptimizeLoss/gradients/conv2d_16/BiasAdd_grad/tuple/group_deps"
   op: "NoOp"
-  input: "^OptimizeLoss/gradients/Reshape_1_grad/Reshape"
+  input: "^OptimizeLoss/gradients/Mul_grad/tuple/control_dependency"
   input: "^OptimizeLoss/gradients/conv2d_16/BiasAdd_grad/BiasAddGrad"
 }
 node {
   name: "OptimizeLoss/gradients/conv2d_16/BiasAdd_grad/tuple/control_dependency"
   op: "Identity"
-  input: "OptimizeLoss/gradients/Reshape_1_grad/Reshape"
+  input: "OptimizeLoss/gradients/Mul_grad/tuple/control_dependency"
   input: "^OptimizeLoss/gradients/conv2d_16/BiasAdd_grad/tuple/group_deps"
   attr {
     key: "T"
@@ -22126,7 +22880,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@OptimizeLoss/gradients/Reshape_1_grad/Reshape"
+        s: "loc:@OptimizeLoss/gradients/Mul_grad/Reshape"
       }
     }
   }
@@ -30193,7 +30947,7 @@ node {
 node {
   name: "OptimizeLoss/gradients/conv2d/convolution_grad/Shape"
   op: "Shape"
-  input: "Reshape"
+  input: "transpose"
   attr {
     key: "T"
     value {
@@ -30321,7 +31075,7 @@ node {
 node {
   name: "OptimizeLoss/gradients/conv2d/convolution_grad/Conv2DBackpropFilter"
   op: "Conv2DBackpropFilter"
-  input: "Reshape"
+  input: "transpose"
   input: "OptimizeLoss/gradients/conv2d/convolution_grad/Shape_1"
   input: "OptimizeLoss/gradients/conv2d/BiasAdd_grad/tuple/control_dependency"
   attr {
@@ -30472,7 +31226,7 @@ node {
 node {
   name: "OptimizeLoss/gradients/conv2d_2/convolution_grad/Shape"
   op: "Shape"
-  input: "Reshape"
+  input: "transpose"
   attr {
     key: "T"
     value {
@@ -30600,7 +31354,7 @@ node {
 node {
   name: "OptimizeLoss/gradients/conv2d_2/convolution_grad/Conv2DBackpropFilter"
   op: "Conv2DBackpropFilter"
-  input: "Reshape"
+  input: "transpose"
   input: "OptimizeLoss/gradients/conv2d_2/convolution_grad/Shape_1"
   input: "OptimizeLoss/gradients/conv2d_2/BiasAdd_grad/tuple/control_dependency"
   attr {
@@ -36638,7 +37392,7 @@ node {
         dtype: DT_STRING
         tensor_shape {
         }
-        string_val: "_temp_be2a4d556b1d4b228022b803f91865d3/part"
+        string_val: "_temp_81e1b8ca41004da8bd504b227abf36b2/part"
       }
     }
   }

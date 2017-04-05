@@ -8,7 +8,8 @@ from tensorflow.contrib.learn.python.learn.estimators import model_fn as model_f
 def model_fn(features, targets, mode, params):
   # Features are 13 of 9x9
   # Note that turn and ko info are set to valid_move map.
-  board = tf.reshape(features, [-1, 9, 9, 13])  # x*y*f is correct?
+  # Original input was (-1, 13, 9, 9), will be reshaped to (-1, 9, 9, 13)
+  board = tf.transpose(tf.reshape(features, [-1, 13, 9, 9]), perm=[0, 2, 3, 1])
   conv1_55 = tf.layers.conv2d(inputs=board, filters=96, kernel_size=[5, 5],
       padding="same", activation=tf.nn.relu)  # 13*25*96 = 31200
   conv1_33 = tf.layers.conv2d(inputs=board, filters=256, kernel_size=[3, 3],
@@ -42,7 +43,10 @@ def model_fn(features, targets, mode, params):
 
   conv_out = tf.layers.conv2d(inputs=tf.concat([inception4, inception2, inception3], -1),
       filters=2, kernel_size=[1, 1], padding="same")  # (64+64+64)*1*2 = 384
-  conv_flat = tf.reshape(conv_out, [-1, 9 * 9 * 2])
+  valid_moves = tf.reshape(tf.reduce_max(
+          tf.slice(board, [-1, 0, 0, 7], [-1, 9, 9, 9]), 3), [-1, 9, 9, 1])
+
+  conv_flat = tf.reshape(tf.multiply(conv_out, valid_moves), [-1, 9 * 9 * 2])
   special_actions = tf.layers.dense(inputs=conv_flat, units=2)  # 81*2*2 = 324
 
   playing, _ = tf.split(conv_flat, [81, 81], axis=1)

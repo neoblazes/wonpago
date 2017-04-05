@@ -31,9 +31,38 @@ if len(sys.argv) < 2:
   exit(1)
 model_dir = sys.argv[1]
 
+ACTION_CODE = { 0: 'P', 82: 'S' }
+
 # Load model and predict
 model_fn = importlib.import_module('%s.model_fn' % model_dir)
 estimator = model_fn.GetEstimator(model_dir)
+
+board, ko, turn = play_go.InitBoard()
+
+def new():
+  global board, ko, turn
+  board, ko, turn = play_go.InitBoard()
+  return 'OK'
+
+def play(action):
+  global board, ko, turn
+  if action == 0:
+    pass
+  elif action == ko:
+    return '?'
+  else:
+    valid, ko = play_go.PlayGo(board, turn, action)
+  turn = play_go.FlipTurn(turn)
+  return '='
+
+def genmove():
+  global board, ko, turn
+  feature = play_go.ToFeature(board, ko, turn, 0, 0)
+  return get_forwards(','.join(str(x) for x in feature[:-2]))
+
+def show():
+  global board, ko, turn
+  return [l[1:-1] for l in board[1:-1]]
 
 def get_forwards(feature_csvs):
   if not type(feature_csvs) is list:
@@ -49,13 +78,23 @@ def get_forwards(feature_csvs):
   rets = []
   for predict in predicts:
     probabilities = list(predict['probabilities'])
-    rets.append([ float(x) for x in probabilities ])
+    actions = []
+    for i in range(len(probabilities)):
+      actions.append([train_lib.UnpackAction(i) if i > 0 and i < 82
+                      else ACTION_CODE[i], float(probabilities[i])])
+    rets.append(sorted(actions, key=lambda x:x[1], reverse = True)[:10])
   if len(rets) == 1:
     return rets[0]
   return rets
+print(get_forwards(['1,1,1,0,0,0,0,0,0,' * 9 + '0,1', '0,' * 81 + '0,1']))
 
 server = SimpleXMLRPCServer(("", 11001))
 print "Listening on port 11001..."
-print "Supporting get_forwards() with both of single feature csv or list of csv string."
+print "Supporting new(), play(<action>), genmove() "
+print "and get_forwards() with both of single feature csv or list of csv string."
+server.register_function(new, "new")
+server.register_function(play, "play")
+server.register_function(genmove, "genmove")
+server.register_function(show, "show")
 server.register_function(get_forwards, "get_forwards")
 server.serve_forever()
