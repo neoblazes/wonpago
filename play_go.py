@@ -36,24 +36,31 @@ def NearPositions(x, y):
           if pos[0] > 0 and pos[0] < 10 and pos[1] > 0 and pos[1] < 10]
 
 def GetConnented(board, group, x, y):
+  # TODO group = set()
   group.add((x, y))
   stone = board[y][x]
   for pos in NearPositions(x, y):
     if board[pos[1]][pos[0]] == stone and not (pos[0], pos[1]) in group:
       GetConnented(board, group, pos[0], pos[1])
 
-def GetLiberty(board, group):
+def GetLibertySet(board, group):
   liberty = set()
   # It should check dup of liberty. Just ok to check 0 or Ko.
   for pos in group:
     for n_pos in NearPositions(pos[0], pos[1]):
       if board[n_pos[1]][n_pos[0]] == 0:
         liberty.add((n_pos[0], n_pos[1]))
-  return len(liberty)
+  return liberty
+
+def GetLiberty(board, group):
+  return len(GetLibertySet(board, group))
 
 def CaptureGroup(board, group):
   for pos in group:
     board[pos[1]][pos[0]] = 0
+
+def IsEmpty(board, x, y):
+  return board[y][x] == 0
 
 def IsOpponentStone(target, source):
   return target in (BLACK, WHITE) and target != source
@@ -61,6 +68,8 @@ def IsOpponentStone(target, source):
 def GetLibertyMap(board):
   liberty_map = [0] * 81
   group_map = [0] * 81
+  atari_pos = [[], []]
+  # TODO: self_atari_map = [0] * 81
   idx = 0
   for i in range(1,10):
     for j in range(1,10):
@@ -68,12 +77,32 @@ def GetLibertyMap(board):
       if (board[i][j] == BLACK or board[i][j] == WHITE) and liberty_map[idx] == 0:
         group = set()
         GetConnented(board, group, j, i)
-        liberty = GetLiberty(board, group)
+        liberty_set = GetLibertySet(board, group)
         for pos in group:
           group_map[(pos[1] - 1) * 9 + pos[0] - 1] = len(group)
-          liberty_map[(pos[1] - 1) * 9 + pos[0] - 1] = liberty
+          liberty_map[(pos[1] - 1) * 9 + pos[0] - 1] = len(liberty_set)
+        if len(liberty_set) == 1:
+          atari_pos[FlipTurn(board[i][j]) - 1].append(liberty_set.pop())
       idx = idx + 1
-  return liberty_map, group_map
+  return liberty_map, group_map # , atari_pos
+
+def IsCapturing(board, turn, x, y):
+  for pos in NearPositions(x, y):
+    if IsOpponentStone(board[pos[1]][pos[0]], turn):
+      group = set()
+      GetConnented(board, group, pos[0], pos[1])
+      liberty = GetLiberty(board, group)
+      if liberty == 1:
+        return True
+  return False
+
+def IsSelfAtari(board, turn, x, y):
+  board2 = copy.deepcopy(board)  # make clone for probe
+  board2[y][x] = turn
+  group = set()
+  GetConnented(board2, group, x, y)
+  liberty = GetLiberty(board2, group)
+  return liberty < 2  # True for both of self atari and self die.
 
 def EncodePos(x, y):
   return y * 10 + x
@@ -195,8 +224,8 @@ def ToFeature(board, ko, turn, action, result, add_liberty=False, add_move=False
   return board_serial + [ko, turn, action, result]
 
 # Print out human readable.
-BOARD_CHAR = { 2: 'O', 1: '@', 0: '.' }
-TURN_MSG = { 1: 'BLACK(@)', 2: 'WHITE(O)', 0: '?' }
+BOARD_CHAR = { 2: 'O', 1: 'X', 0: '.' }
+TURN_MSG = { 1: 'BLACK(X)', 2: 'WHITE(O)', 0: '?' }
 def SPrintBoard(feature, detail=False):
   lines = []
   board = feature[:81]
