@@ -93,11 +93,12 @@ if len(move_sequences) > 2:  # Do not save if no sequences.
     f.write(sgf_str)
 
 # Fast rollouts by using gnugo.
-timestamp = datetime.now().strftime("%y%m%d-%H%M%S")
-p = subprocess.Popen(['gnugo', '-l', 'autoplay.sgf', '-o', 'autoplay/%s.sgf' % timestamp,
+out_sgf = 'autoplay/%s.sgf' % datetime.now().strftime("%y%m%d-%H%M%S")
+p = subprocess.Popen(['gnugo', '-l', 'autoplay.sgf', '-o', out_sgf,
                       '--score', 'finish', '--chinese-rules'],
                      stdout=subprocess.PIPE)
 out, err = p.communicate()
 result_code = out.split('\n')[-2][0]
 print out
 print 'Result code: %s' % result_code
+p = subprocess.Popen(['cp', out_sgf, 'autoplay_rollout.sgf']).communicate()
