@@ -64,8 +64,8 @@ def parse_row(row, produce_dominion=False):
     x_out += black_dominion.reshape((9*9)).tolist()
     x_out += white_dominion.reshape((9*9)).tolist()
 
-  # Parse target (move)
-  y_num = int(row[-2])
+  # Parse target (move, result)
+  y_num = row[-2:]
   return x_out, y_num
 
 def target_nparray(target):

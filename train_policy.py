@@ -43,11 +43,11 @@ def load_dataset(filename):
     data, target = [], []
     for row in data_file:
       if len(row) >= 81 * 13:
-        x, y = row[:81 * 13], int(row[-1])
+        x, y = row[:81 * 13], row[-(len(row) % 81):]
       else:
         x, y = train_lib.parse_row(row, produce_dominion)
       data.append(np.asarray(x, dtype=np.float32))
-      target.append(y)
+      target.append(int(y[0]))  # Uses action only on policy net.
     return data, target
 
 # Load network model.

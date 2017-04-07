@@ -3,8 +3,6 @@
 #
 # Usage: python generate_train_data.py <in_csv>
 
-import numpy as np
-
 import csv
 import sys
 
@@ -19,4 +17,4 @@ with gfile.Open(in_csv) as inf:
   data, target = [], []
   for row in data_file:
     x, y = train_lib.parse_row(row, True)
-    print(','.join(list(map(str, x + [y]))))
+    print(','.join(list(map(str, x + y))))

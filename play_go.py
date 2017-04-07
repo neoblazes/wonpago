@@ -15,7 +15,7 @@ class PlayLog:
     ko: 1~81, 0 means no Ko.
     turn: black:1, white:2
     action: 0: pass, 11~99: play, 1: surrender
-    result: 0: black, 1: jigo, 2: white
+    result: 1: black, 1.5: jigo, 2: white
     """
     self.board = board
     self.ko = ko
