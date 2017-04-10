@@ -16,8 +16,11 @@ $ unzip go9-large.zip -d go9-large
 2) Generate features from kifu
 $ python parse_kifu.py "go9-large/*" > large.csv
 
+2-2) Split training file based on your machine power
+$ split -l 100000 -d large.csv large.csv.
+
 3) Train model
-$ python train_kifu.py cnn_82x2_3_mini large.csv 1000000
+$ for f in large_f13.csv.*; do python train_policy.py policy_0331 $f 20000; done
 
 4) Trace the training progress from Tensor Board (binary has bug on linux now)
 $ python /usr/local/lib/python2.7/dist-packages/tensorflow/tensorboard/tensorboard.py --logdir=<your_model_dir>
