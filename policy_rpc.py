@@ -35,7 +35,9 @@ ACTION_CODE = { 0: 'P', 82: 'S' }
 
 # Load model and predict
 model_fn = importlib.import_module('%s.model_fn' % model_dir)
-estimator = model_fn.GetEstimator(model_dir)
+config = tf.contrib.learn.RunConfig()
+config.tf_config.gpu_options.allow_growth=True
+estimator = model_fn.GetEstimator(model_dir, config)
 
 board, ko, turn = play_go.InitBoard()
 
@@ -64,29 +66,40 @@ def show():
   global board, ko, turn
   return [l[1:-1] for l in board[1:-1]]
 
+x_iter = train_lib.xiter(1)
+predicts = None
+
 def get_forwards(feature_csvs):
+  global x_iter, predicts
   if not type(feature_csvs) is list:
     feature_csvs = [feature_csvs]
   x_tests = []
   for feature_csv in feature_csvs:
     feature = [ int(x) for x in feature_csv.split(',') ]
-    board, ko, turn = play_go.FromFeature(feature + [0])
+    board, ko, turn = play_go.FromFeature((feature + [0, 0, 0])[:84])
     feature = play_go.ToFeature(board, ko, turn, 0, 0, True, True)
     x_test, _ = train_lib.parse_row(feature, True)
     x_tests.append(np.asarray(x_test, dtype=np.float32))
-  predicts = estimator.predict(np.array(x_tests))
+  x_iter.update(x_tests)
+  if predicts == None:
+    predicts = estimator.predict(x=x_iter)  # Only calls once with opened iterator.
+  #predicts = estimator.predict(x=np.asarray(x_tests, dtype=np.float32))
   rets = []
-  for predict in predicts:
-    probabilities = list(predict['probabilities'])
+  for _ in range(len(x_tests)): # predict in predicts:
+  #for predict in predicts:
+    probabilities = predicts.next()['probabilities']
     actions = []
     for i in range(len(probabilities)):
-      actions.append([train_lib.UnpackAction(i) if i > 0 and i < 82
+      actions.append([str(train_lib.UnpackAction(i)) if i > 0 and i < 82
                       else ACTION_CODE[i], float(probabilities[i])])
     rets.append(sorted(actions, key=lambda x:x[1], reverse = True)[:10])
   if len(rets) == 1:
     return rets[0]
   return rets
+
 print(get_forwards(['1,1,1,0,0,0,0,0,0,' * 9 + '0,1', '0,' * 81 + '0,1']))
+print(get_forwards(['1,1,1,0,0,0,0,0,0,' * 9 + '0,1', '0,' * 81 + '0,1']))
+
 
 server = SimpleXMLRPCServer(("", 11001))
 print "Listening on port 11001..."

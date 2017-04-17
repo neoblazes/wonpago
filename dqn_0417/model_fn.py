@@ -56,6 +56,7 @@ def model_fn(features, targets, mode, params):
 
   # For modes with targets. Target shape is [mask*82, q].
   mask, target_qa = tf.split(targets, [-1, 1], axis=1)
+
   #tf.range(tf.shape(board)[0])
   # tf.gather_nd(a, tf.stack(([0, 1, 2], tf.to_int32(tf.reshape(i, [3]))), -1))
   predict_qa = tf.reshape(tf.reduce_max(q_net * mask, axis=1), [-1, 1])
@@ -63,7 +64,10 @@ def model_fn(features, targets, mode, params):
   #    tf.stack((tf.range(batch_size),   # [0...batch]
   #              tf.to_int32(tf.reshape(cols, [-1]))), -1)), [-1, 1])
 
-  loss = tf.losses.mean_squared_error(target_qa, predict_qa)
+  # The target can is Q(a) when maks is given, otherwise the target is V.
+  loss = tf.cond(tf.shape(mask)[1] > 1,
+                 lambda: tf.losses.mean_squared_error(target_qa, predict_qa),
+                 lambda: tf.losses.mean_squared_error(target_qa, value))
   #loss = tf.losses.mean_squared_error(target_qa, predict_qa)
   #loss = tf.losses.mean_squared_error(target_qa, predict_qa)
 

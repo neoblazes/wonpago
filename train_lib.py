@@ -110,3 +110,21 @@ def rot90(feature, target):
     y = int((target[i]) / 10)
     x = target[i] % 10
     target[i] = x * 10 + (10 - y)  # (x, y) -> (10 - y, x)
+
+class xiter:
+  def __init__(self, batch):
+    self.idx = 0
+    self.x_tests = []
+    self.batch = batch
+
+  def __iter__(self):
+    return self
+
+  def next(self):
+    ret = self.x_tests[self.idx:min(self.idx + self.batch, len(self.x_tests))]
+    self.idx += self.batch
+    return np.asarray(ret, dtype=np.float32)
+
+  def update(self, x):
+    self.x_tests = x
+    self.idx = 0

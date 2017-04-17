@@ -211,7 +211,7 @@ def FromFeature(feature):
       idx = idx + 1
   return board, ko, turn
 
-def ToFeature(board, ko, turn, action, result, add_liberty=False, add_move=False):
+def ToFeature(board, ko, turn, action=0, result=0, add_liberty=False, add_move=False):
   board_serial = [item for innerlist in board[1:-1] for item in innerlist[1:-1]]
   liberty_map = None
   if add_liberty:
@@ -226,6 +226,20 @@ def ToFeature(board, ko, turn, action, result, add_liberty=False, add_move=False
 # Print out human readable.
 BOARD_CHAR = { 2: 'O', 1: 'X', 0: '.' }
 TURN_MSG = { 1: 'BLACK(X)', 2: 'WHITE(O)', 0: '?' }
+def SPrintBoardRaw(board, ko, turn):
+  lines = []
+  ko = DecodePos(ko)
+  for row in range(1, 10):
+    outstr = ''
+    for col in range(1, 10):
+      if row == ko[1] and col == ko[0]:
+        outstr = outstr + '*'
+      else:
+        outstr = outstr + BOARD_CHAR[board[row][col]]
+    lines.append(outstr)
+  lines.append('Last move %s' % TURN_MSG[FlipTurn(turn)])
+  return '\n'.join(lines)
+
 def SPrintBoard(feature, detail=False):
   lines = []
   board = feature[:81]
